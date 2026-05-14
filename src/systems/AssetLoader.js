@@ -22,7 +22,9 @@
 export const ASSET_DEFS = {
 
   // ── Characters ─────────────────────────────────────────────────────────────
-  player:              { path: '/assets/sprites/player.png',              w: 52,   h: 93  },
+  // player_sheet.png: 4 cols × 2 rows, each frame 52×93 px (no gaps)
+  // Frame layout: 0=Idle 1=Walk 2=Side 3=Back 4=Sup 5=Stacb 6=Sarc 7=Jump
+  player:              { path: '/assets/sprites/player_sheet.png',        w: 52,   h: 93,  frameWidth: 52, frameHeight: 93 },
   enemy:               { path: '/assets/sprites/enemy.png',               w: 36,   h: 52  },
   enemy_heavy:         { path: '/assets/sprites/enemy_heavy.png',         w: 48,   h: 64  },
   enemy_ranged:        { path: '/assets/sprites/enemy_ranged.png',        w: 36,   h: 52  },
@@ -67,7 +69,10 @@ export const ASSET_DEFS = {
 export function preloadAssets(scene, keys) {
   keys.forEach(key => {
     const def = ASSET_DEFS[key];
-    if (def && !scene.textures.exists(key)) {
+    if (!def || scene.textures.exists(key)) return;
+    if (def.frameWidth) {
+      scene.load.spritesheet(key, def.path, { frameWidth: def.frameWidth, frameHeight: def.frameHeight });
+    } else {
       scene.load.image(key, def.path);
     }
   });

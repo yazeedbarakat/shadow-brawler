@@ -38,7 +38,8 @@ class IdleState extends State {
 
   enter() {
     this.player.sprite.setVelocityX(0);
-    this.player._tint(0x4488ff);
+    this.player.sprite.clearTint();
+    this.player.sprite.setFrame(0); // Idle pose
   }
 
   update() {
@@ -53,7 +54,10 @@ class IdleState extends State {
 class WalkState extends State {
   constructor(p) { super(p, 'WALK'); }
 
-  enter() { this.player._tint(0x55aaff); }
+  enter() {
+    this.player.sprite.clearTint();
+    this.player.sprite.setFrame(1); // Walk pose
+  }
 
   update() {
     const p = this.player;
@@ -82,7 +86,8 @@ class JumpState extends State {
 
   enter() {
     this.player.sprite.setVelocityY(-this.player.jumpForce);
-    this.player._tint(0x44ddff);
+    this.player.sprite.clearTint();
+    this.player.sprite.setFrame(7); // Jump pose
   }
 
   update() {
@@ -96,7 +101,10 @@ class JumpState extends State {
 class FallState extends State {
   constructor(p) { super(p, 'FALL'); }
 
-  enter() { this.player._tint(0x3366cc); }
+  enter() {
+    this.player.sprite.clearTint();
+    this.player.sprite.setFrame(7); // Jump/fall pose
+  }
 
   update() {
     const p = this.player;
@@ -134,7 +142,12 @@ class AttackState extends State {
     this._hitboxOn = false;
     p.isAttacking  = false;
     p.sprite.setVelocityX(0);
-    p._tint(this.cfg.tintColor);
+    p.sprite.clearTint();
+
+    // Switch to the matching attack pose
+    // 2=Side(sword slash)  4=Sup(punch)  6=Sarc(kick sweep)
+    const ATTACK_FRAMES = { ATTACK_SWORD: 2, ATTACK_PUNCH: 4, ATTACK_KICK: 6 };
+    p.sprite.setFrame(ATTACK_FRAMES[this.name] ?? 4);
 
     // Resize the one shared hitbox for this attack's reach and height
     const { hitW, hitH, hitOffsetX } = this.cfg;
@@ -194,8 +207,8 @@ class HitState extends State {
     this._elapsed = 0;
     const p = this.player;
 
-    // Reset combo streak — player took a hit
     p.scene.events.emit('combo-reset');
+    p.sprite.setFrame(3); // Back pose — recoiling from a hit
 
     // Brief white flash, then settle to red for the stun duration
     p._tint(0xffffff);
@@ -203,7 +216,6 @@ class HitState extends State {
       if (p.sprite.active && p.sm.current === 'HIT') p._tint(0xff1111);
     });
 
-    // Knockback pushes player back from the direction they were facing
     p.sprite.setVelocityX(-p.facing * 160);
   }
 
@@ -221,10 +233,11 @@ class DeadState extends State {
 
   enter() {
     const p = this.player;
+    p.sprite.setFrame(5); // Stacb pose — collapsed/dying
     p._tint(0x444444);
     p.sprite.setVelocityX(0);
     p.isAttacking = false;
-    p.scene.events.emit('combo-reset'); // death also breaks the combo
+    p.scene.events.emit('combo-reset');
     p.attackHitbox.body.enable = false;
     p.scene.events.emit('player-dead');
   }
