@@ -40,11 +40,11 @@ export const ASSET_DEFS = {
   proj_boss:           { path: '/assets/sprites/proj_boss.png',           w: 16,   h: 16  },
 
   // ── Backgrounds (stretched to fill WORLD_W × WORLD_H) ─────────────────────
-  bg_city:             { path: '/assets/backgrounds/level1_city.png',     w: 1600, h: 450 },
-  bg_temple:           { path: '/assets/backgrounds/level2_temple.png',   w: 1600, h: 450 },
-  bg_forest:           { path: '/assets/backgrounds/level3_forest.png',   w: 1600, h: 450 },
-  bg_castle:           { path: '/assets/backgrounds/level4_castle.png',   w: 1600, h: 450 },
-  bg_throne:           { path: '/assets/backgrounds/level5_throne.png',   w: 1200, h: 450 },
+  bg_city:             { path: '/assets/backgrounds/level1theame.webp',   w: 1600, h: 450 },
+  bg_temple:           { path: '/assets/backgrounds/level2theme.webp',    w: 1600, h: 450 },
+  bg_forest:           { path: '/assets/backgrounds/level3theme.webp',    w: 1600, h: 450 },
+  bg_castle:           { path: '/assets/backgrounds/level4theme.webp',    w: 1600, h: 450 },
+  bg_throne:           { path: '/assets/backgrounds/level5theme.webp',    w: 1200, h: 450 },
 
   // ── Platform tiles (tiled horizontally across each platform's full width) ──
   plat_city:           { path: '/assets/sprites/platform_city.png',       w: 16,   h: 16  },
