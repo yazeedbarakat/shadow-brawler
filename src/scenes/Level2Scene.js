@@ -137,13 +137,6 @@ export default class Level2Scene extends Phaser.Scene {
 
     const defs = [
       { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x2a1808, edge: false },
-      { x: 200,  y: 368, w: 155 }, // P1 — starting step
-      { x: 388,  y: 308, w: 182 }, // P2 — enemy 1
-      { x: 618,  y: 252, w: 172 }, // P3 — enemy 2 + sword pickup
-      { x: 852,  y: 310, w: 178 }, // P4 — enemy 3
-      { x: 1072, y: 256, w: 162 }, // P5 — throwing star pickup
-      { x: 1284, y: 308, w: 188 }, // P6 — enemy 4
-      { x: 1490, y: 372, w: 158 }, // P7 — approach to exit
     ];
 
     return defs.map(({ x, y, w, h = 16, color = STONE, edge = true }) => {
@@ -202,7 +195,7 @@ export default class Level2Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 350);
+    this.player = new Player(this, 60, 416);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -216,13 +209,13 @@ export default class Level2Scene extends Phaser.Scene {
     // Platform tops: P2 y=308−8=300, P3 y=252−8=244, P4 y=310−8=302, P6 y=308−8=300
     // Enemy center = top − 26 (half of 52px height)
     const spawns = [
-      { x: 388,  y: 260, cfg: { health: 80, speed: 78, chaseSpeed: 114,
+      { x: 300,  y: 404, cfg: { health: 80, speed: 78, chaseSpeed: 114,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 618,  y: 208, cfg: { health: 80, speed: 76, chaseSpeed: 110,
+      { x: 600,  y: 404, cfg: { health: 80, speed: 76, chaseSpeed: 110,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 852,  y: 266, cfg: { health: 80, speed: 80, chaseSpeed: 116,
+      { x: 900,  y: 404, cfg: { health: 80, speed: 80, chaseSpeed: 116,
           detectionRange: 255, contactDamage: 12, color: 0xaa5522 } },
-      { x: 1284, y: 264, cfg: { health: 80, speed: 82, chaseSpeed: 118,
+      { x: 1200, y: 404, cfg: { health: 80, speed: 82, chaseSpeed: 118,
           detectionRange: 265, contactDamage: 12, color: 0xaa5522 } },
     ];
 
@@ -251,9 +244,8 @@ export default class Level2Scene extends Phaser.Scene {
     });
 
     // Sword on P3 (guarded by enemy 2) — reward for fighting through
-    this.weaponSystem.addPickup(618, 214, 'sword');
-    // Throwing star on P5 — accessible after mid-level
-    this.weaponSystem.addPickup(1072, 218, 'throwingstar');
+    this.weaponSystem.addPickup(550, 414, 'sword');
+    this.weaponSystem.addPickup(1050, 414, 'throwingstar');
 
     this.physics.add.overlap(
       this.player.sprite,

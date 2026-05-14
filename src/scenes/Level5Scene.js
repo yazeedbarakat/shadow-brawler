@@ -137,9 +137,6 @@ export default class Level5Scene extends Phaser.Scene {
 
     const defs = [
       { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x0c0818, edge: false },
-      // Two low cover platforms — player can duck behind them to dodge projectiles
-      { x: 250, y: 400, w: 160 },
-      { x: 950, y: 400, w: 160 },
     ];
 
     const PLAT_KEY = 'plat_boss';
@@ -162,7 +159,7 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 80, 370);
+    this.player = new Player(this, 80, 416);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame());
   }
@@ -170,7 +167,7 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── Boss ────────────────────────────────────────────────────────────────
 
   _createBoss() {
-    this._boss = new Boss(this, 950, 340);
+    this._boss = new Boss(this, 950, 382);
     // Boss collides with platforms and world bounds (already set in Boss constructor)
     this.physics.add.collider(this._boss.sprite, this._platforms);
   }
@@ -182,7 +179,7 @@ export default class Level5Scene extends Phaser.Scene {
     this.weaponSystem = new WeaponSystem(this, this.player);
 
     // Add sword pickup near player spawn
-    this.weaponSystem.addPickup(160, 340, 'sword');
+    this.weaponSystem.addPickup(160, 414, 'sword');
 
     // Boss sprite acts as a single-member "enemy group" for WeaponSystem
     const bossGroup = this.physics.add.group();

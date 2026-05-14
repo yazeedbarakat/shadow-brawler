@@ -147,13 +147,6 @@ export default class Level1Scene extends Phaser.Scene {
 
     const defs = [
       { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x22222e, edge: false },
-      { x: 200,  y: 370, w: 160 }, // P1 — starting step
-      { x: 435,  y: 308, w: 200 }, // P2
-      { x: 680,  y: 252, w: 190 }, // P3 — enemy 1 patrols here
-      { x: 885,  y: 328, w: 185 }, // P4 — enemy 2 patrols here
-      { x: 1090, y: 258, w: 165 }, // P5 — sword pickup here
-      { x: 1298, y: 308, w: 205 }, // P6 — enemy 3 patrols here
-      { x: 1500, y: 370, w: 165 }, // P7 — approach to exit
     ];
 
     return defs.map(({ x, y, w, h = 16, color = BODY, edge = true }) => {
@@ -215,7 +208,7 @@ export default class Level1Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 360);
+    this.player = new Player(this, 60, 416);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -230,9 +223,9 @@ export default class Level1Scene extends Phaser.Scene {
     // Target platform tops: P3 y=252−8=244, P4 y=328−8=320, P6 y=308−8=300
     // Enemy h=52 → center sits at platformTop − 26
     const spawns = [
-      { x: 680,  y: 205 }, // lands on P3 (top 244, center 218)
-      { x: 885,  y: 285 }, // lands on P4 (top 320, center 294)
-      { x: 1298, y: 265 }, // lands on P6 (top 300, center 274)
+      { x: 400,  y: 404 },
+      { x: 800,  y: 404 },
+      { x: 1200, y: 404 },
     ];
 
     spawns.forEach(({ x, y }) => {
@@ -263,7 +256,7 @@ export default class Level1Scene extends Phaser.Scene {
     });
 
     // Single sword pickup floats above P5
-    this.weaponSystem.addPickup(1090, 226, 'sword');
+    this.weaponSystem.addPickup(700, 414, 'sword');
 
     // Walk-into-door triggers level transition (only when door is open)
     this.physics.add.overlap(

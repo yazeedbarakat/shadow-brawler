@@ -132,13 +132,6 @@ export default class Level3Scene extends Phaser.Scene {
 
     const defs = [
       { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x030803, edge: false },
-      { x: 192,  y: 366, w: 148 }, // P1 — starting step
-      { x: 382,  y: 304, w: 178 }, // P2 — melee enemy 1
-      { x: 606,  y: 248, w: 162 }, // P3 — ranged enemy 1
-      { x: 825,  y: 308, w: 172 }, // P4 — melee enemy 2
-      { x: 1044, y: 252, w: 156 }, // P5 — ranged enemy 2 + throwing star pickup
-      { x: 1262, y: 306, w: 178 }, // P6 — melee enemy 3
-      { x: 1478, y: 366, w: 152 }, // P7 — approach to exit
     ];
 
     const PLAT_KEY = 'plat_forest';
@@ -199,7 +192,7 @@ export default class Level3Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 340);
+    this.player = new Player(this, 60, 416);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -224,9 +217,9 @@ export default class Level3Scene extends Phaser.Scene {
     // Melee enemies — faster, rush the player
     // Platform tops: P2 y=304−8=296, P4 y=308−8=300, P6 y=306−8=298
     [
-      { x: 382,  y: 250 }, // P2
-      { x: 825,  y: 264 }, // P4
-      { x: 1262, y: 260 }, // P6
+      { x: 350,  y: 404 },
+      { x: 800,  y: 404 },
+      { x: 1200, y: 404 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, meleeCfg);
       this.enemies.push(e);
@@ -236,8 +229,8 @@ export default class Level3Scene extends Phaser.Scene {
     // Ranged enemies — stop and shoot glowing projectiles
     // Platform tops: P3 y=248−8=240, P5 y=252−8=244
     [
-      { x: 606,  y: 202 }, // P3
-      { x: 1044, y: 206 }, // P5
+      { x: 600,  y: 404 },
+      { x: 1000, y: 404 },
     ].forEach(({ x, y }) => {
       const re = new RangedEnemy(this, x, y, rangedCfg);
       this.enemies.push(re);
@@ -272,7 +265,7 @@ export default class Level3Scene extends Phaser.Scene {
     });
 
     // Throwing star on P5 — near the ranged enemy guarding it
-    this.weaponSystem.addPickup(1044, 214, 'throwingstar');
+    this.weaponSystem.addPickup(1000, 414, 'throwingstar');
 
     this.physics.add.overlap(
       this.player.sprite,

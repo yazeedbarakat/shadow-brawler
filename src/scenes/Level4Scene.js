@@ -139,13 +139,6 @@ export default class Level4Scene extends Phaser.Scene {
 
     const defs = [
       { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x0e0e1c, edge: false },
-      { x: 198,  y: 366, w: 155 }, // P1 — starting step
-      { x: 398,  y: 308, w: 185 }, // P2 — heavy enemy 1
-      { x: 638,  y: 252, w: 175 }, // P3 — heavy enemy 2
-      { x: 878,  y: 310, w: 180 }, // P4 — heavy enemy 3
-      { x: 1096, y: 254, w: 164 }, // P5 — sword pickup
-      { x: 1312, y: 308, w: 190 }, // P6 — heavy enemy 4
-      { x: 1500, y: 368, w: 158 }, // P7 — approach to exit
     ];
 
     const PLAT_KEY = 'plat_castle';
@@ -205,7 +198,7 @@ export default class Level4Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 350);
+    this.player = new Player(this, 60, 416);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -229,10 +222,10 @@ export default class Level4Scene extends Phaser.Scene {
     // Spawn above platforms so gravity settles them
     // P2 top=300, P3 top=244, P4 top=302, P6 top=300; enemy h=64 → center = top-32
     [
-      { x: 398,  y: 258 }, // P2
-      { x: 638,  y: 200 }, // P3
-      { x: 878,  y: 260 }, // P4
-      { x: 1312, y: 260 }, // P6
+      { x: 300,  y: 398 },
+      { x: 650,  y: 398 },
+      { x: 950,  y: 398 },
+      { x: 1250, y: 398 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, heavyCfg);
       this.enemies.push(e);
@@ -258,10 +251,9 @@ export default class Level4Scene extends Phaser.Scene {
     });
 
     // Armor pickup RIGHT at the start so the player gets it before engaging
-    this._armorSystem.addPickup(85, 330);
+    this._armorSystem.addPickup(85, 414);
 
-    // Sword on P5 — reward for fighting through the first two heavies
-    this.weaponSystem.addPickup(1096, 216, 'sword');
+    this.weaponSystem.addPickup(900, 414, 'sword');
 
     this.physics.add.overlap(
       this.player.sprite,
