@@ -127,7 +127,7 @@ export default class HUD {
     this._slotY = slotY - 8; // icon center (above label)
 
     // ── Combo counter (center-screen, hidden until 3+ hits) ────────────────
-    this._comboTxt = scene.add.text(400, 185, '', {
+    this._comboTxt = this._scene.add.text(400, 185, '', {
       fontSize: '28px', fontFamily: 'monospace',
       color: '#ffffff',
       stroke: '#000000', strokeThickness: 4,
