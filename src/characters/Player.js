@@ -265,34 +265,100 @@ export default class Player {
   // ── Setup ───────────────────────────────────────────────────────────────────
 
   _initTextures(scene) {
-    // Character: 40 wide × 60 tall — portrait rectangle
+    // Character: 48 wide × 80 tall — detailed fighter sprite
     if (!scene.textures.exists('player')) {
       const g = scene.make.graphics({ x: 0, y: 0, add: false });
 
-      // Body
-      g.fillStyle(0x4488ff);
-      g.fillRect(0, 0, 40, 60);
+      // ── Legs / pants (dark navy) ──────────────────────────────────────────
+      g.fillStyle(0x1a237e);
+      g.fillRect(7,  54, 14, 20); // left leg
+      g.fillRect(27, 54, 14, 20); // right leg
 
-      // Head / upper highlight
-      g.fillStyle(0x66aaff);
-      g.fillRect(4, 2, 32, 20);
+      // ── Boots (black, slightly wider) ─────────────────────────────────────
+      g.fillStyle(0x1a1a1a);
+      g.fillRect(5,  68, 16, 12); // left boot
+      g.fillRect(27, 68, 16, 12); // right boot
+      // boot highlight
+      g.fillStyle(0x333333);
+      g.fillRect(5,  68, 16, 3);
+      g.fillRect(27, 68, 16, 3);
 
-      // Eyes (right-facing; flipped by sprite when left)
-      g.fillStyle(0xaaddff);
-      g.fillRect(22, 7, 10, 7);   // right eye
+      // ── Belt (gold) ───────────────────────────────────────────────────────
+      g.fillStyle(0xe6ac00);
+      g.fillRect(6, 50, 36, 5);
+      g.fillStyle(0xffd740);
+      g.fillRect(6, 50, 36, 2);   // shine
+
+      // ── Torso / gi jacket (deep red) ─────────────────────────────────────
+      g.fillStyle(0xb71c1c);
+      g.fillRect(6, 26, 36, 25);  // main torso block
+
+      // gi fold lines (darker)
+      g.fillStyle(0x8b0000);
+      g.fillRect(20, 28, 3, 20);  // left lapel edge
+      g.fillRect(25, 28, 3, 20);  // right lapel edge
+
+      // centre white stripe (gi collar/lapels)
       g.fillStyle(0xffffff);
-      g.fillRect(28, 8, 4, 5);    // pupil
+      g.fillRect(21, 26, 6, 22);
 
-      // Belt
-      g.fillStyle(0x224488);
-      g.fillRect(0, 34, 40, 6);
+      // torso shadow (bottom)
+      g.fillStyle(0x8b0000);
+      g.fillRect(6, 46, 36, 5);
 
-      // Boots
-      g.fillStyle(0x1a3366);
-      g.fillRect(2,  50, 14, 10);
-      g.fillRect(24, 50, 14, 10);
+      // ── Arms ─────────────────────────────────────────────────────────────
+      // left arm
+      g.fillStyle(0xb71c1c);
+      g.fillRect(0, 28, 8, 18);
+      // right arm
+      g.fillRect(40, 28, 8, 18);
 
-      g.generateTexture('player', 40, 60);
+      // forearms / gloves (dark)
+      g.fillStyle(0x1a1a1a);
+      g.fillRect(0, 40, 8, 8);   // left glove
+      g.fillRect(40, 40, 8, 8);  // right glove
+      g.fillStyle(0x333333);
+      g.fillRect(0, 40, 8, 2);
+      g.fillRect(40, 40, 8, 2);
+
+      // ── Neck ─────────────────────────────────────────────────────────────
+      g.fillStyle(0xd4956a);
+      g.fillRect(19, 21, 10, 6);
+
+      // ── Head ─────────────────────────────────────────────────────────────
+      // face (skin)
+      g.fillStyle(0xd4956a);
+      g.fillRect(12, 5, 24, 18);
+
+      // hair (dark, top + sides)
+      g.fillStyle(0x1a1a1a);
+      g.fillRect(12, 3, 24, 7);   // top hair
+      g.fillRect(10, 5, 4, 12);   // left side hair
+      g.fillRect(34, 5, 4, 12);   // right side hair
+
+      // headband (red)
+      g.fillStyle(0xff1744);
+      g.fillRect(10, 9, 28, 4);
+      g.fillStyle(0xff6d6d);
+      g.fillRect(10, 9, 28, 1);   // headband shine
+
+      // eyes (right-facing; flipped for left)
+      g.fillStyle(0xffffff);
+      g.fillRect(15, 15, 8, 5);   // left eye white
+      g.fillRect(27, 15, 8, 5);   // right eye white
+      g.fillStyle(0x1a1a1a);
+      g.fillRect(17, 16, 4, 4);   // left pupil
+      g.fillRect(31, 16, 4, 4);   // right pupil
+      // eye glint
+      g.fillStyle(0xffffff);
+      g.fillRect(19, 16, 2, 2);
+      g.fillRect(33, 16, 2, 2);
+
+      // nose/mouth hint
+      g.fillStyle(0xb07050);
+      g.fillRect(22, 21, 4, 2);   // mouth line
+
+      g.generateTexture('player', 48, 80);
       g.destroy();
     }
 
@@ -310,7 +376,7 @@ export default class Player {
     this.sprite = scene.physics.add.sprite(x, y, 'player');
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setDepth(5);
-    this.sprite.setScale(0.5);
+    this.sprite.setScale(0.35);
   }
 
   _initHitbox(scene) {
