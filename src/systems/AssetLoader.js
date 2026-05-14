@@ -21,10 +21,14 @@
  */
 export const ASSET_DEFS = {
 
-  // ── Characters ─────────────────────────────────────────────────────────────
-  // player_sheet.png: 4 cols × 2 rows, each frame 52×93 px (no gaps)
-  // Frame layout: 0=Idle 1=Walk 2=Side 3=Back 4=Sup 5=Stacb 6=Sarc 7=Jump
-  player:              { path: '/assets/sprites/player_sheet.png',        w: 52,   h: 93,  frameWidth: 52, frameHeight: 93 },
+  // ── Player animation strips (each frame 52×93 px) ──────────────────────────
+  player:       { path: '/assets/sprites/player_idle.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
+  player_walk:  { path: '/assets/sprites/player_walk.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 4 frames
+  player_jump:  { path: '/assets/sprites/player_jump.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
+  player_hit:   { path: '/assets/sprites/player_hit.png',   w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
+  player_punch: { path: '/assets/sprites/player_punch.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 6 frames
+  player_sword: { path: '/assets/sprites/player_sword.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 6 frames
+  player_kick:  { path: '/assets/sprites/player_kick.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 5 frames
   enemy:               { path: '/assets/sprites/enemy.png',               w: 36,   h: 52  },
   enemy_heavy:         { path: '/assets/sprites/enemy_heavy.png',         w: 48,   h: 64  },
   enemy_ranged:        { path: '/assets/sprites/enemy_ranged.png',        w: 36,   h: 52  },

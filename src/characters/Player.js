@@ -38,8 +38,7 @@ class IdleState extends State {
 
   enter() {
     this.player.sprite.setVelocityX(0);
-    this.player.sprite.clearTint();
-    this.player.sprite.setFrame(0); // Idle pose
+    this.player._play('player_idle');
   }
 
   update() {
@@ -54,10 +53,7 @@ class IdleState extends State {
 class WalkState extends State {
   constructor(p) { super(p, 'WALK'); }
 
-  enter() {
-    this.player.sprite.clearTint();
-    this.player.sprite.setFrame(1); // Walk pose
-  }
+  enter() { this.player._play('player_walk'); }
 
   update() {
     const p = this.player;
@@ -86,8 +82,7 @@ class JumpState extends State {
 
   enter() {
     this.player.sprite.setVelocityY(-this.player.jumpForce);
-    this.player.sprite.clearTint();
-    this.player.sprite.setFrame(7); // Jump pose
+    this.player._play('player_jump');
   }
 
   update() {
@@ -101,10 +96,7 @@ class JumpState extends State {
 class FallState extends State {
   constructor(p) { super(p, 'FALL'); }
 
-  enter() {
-    this.player.sprite.clearTint();
-    this.player.sprite.setFrame(7); // Jump/fall pose
-  }
+  enter() { this.player._play('player_jump'); }
 
   update() {
     const p = this.player;
@@ -142,12 +134,9 @@ class AttackState extends State {
     this._hitboxOn = false;
     p.isAttacking  = false;
     p.sprite.setVelocityX(0);
-    p.sprite.clearTint();
-
-    // Switch to the matching attack pose
-    // 2=Side(sword slash)  4=Sup(punch)  6=Sarc(kick sweep)
-    const ATTACK_FRAMES = { ATTACK_SWORD: 2, ATTACK_PUNCH: 4, ATTACK_KICK: 6 };
-    p.sprite.setFrame(ATTACK_FRAMES[this.name] ?? 4);
+    // Play the matching attack animation
+    const ATTACK_ANIMS = { ATTACK_SWORD: 'player_sword', ATTACK_PUNCH: 'player_punch', ATTACK_KICK: 'player_kick' };
+    p._play(ATTACK_ANIMS[this.name] ?? 'player_punch');
 
     // Resize the one shared hitbox for this attack's reach and height
     const { hitW, hitH, hitOffsetX } = this.cfg;
@@ -208,7 +197,7 @@ class HitState extends State {
     const p = this.player;
 
     p.scene.events.emit('combo-reset');
-    p.sprite.setFrame(3); // Back pose — recoiling from a hit
+    p._play('player_hit');
 
     // Brief white flash, then settle to red for the stun duration
     p._tint(0xffffff);
@@ -233,7 +222,7 @@ class DeadState extends State {
 
   enter() {
     const p = this.player;
-    p.sprite.setFrame(5); // Stacb pose — collapsed/dying
+    p._play('player_hit'); // reuse hit pose for death, then grey tint
     p._tint(0x444444);
     p.sprite.setVelocityX(0);
     p.isAttacking = false;
@@ -278,100 +267,59 @@ export default class Player {
   // ── Setup ───────────────────────────────────────────────────────────────────
 
   _initTextures(scene) {
-    // Character: 48 wide × 80 tall — detailed fighter sprite
-    if (!scene.textures.exists('player')) {
+    const has = key => scene.textures.exists(key);
+
+    // Build Phaser animations from the loaded strips (called once per scene)
+    if (has('player') && !scene.anims.exists('player_idle')) {
+      const FPS = (frames, rate, repeat = 0) =>
+        scene.anims.generateFrameNumbers(frames, { start: 0, end: -1 });
+
+      scene.anims.create({ key: 'player_idle',
+        frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 0 }),
+        frameRate: 6, repeat: -1 });
+
+      if (has('player_walk'))
+        scene.anims.create({ key: 'player_walk',
+          frames: scene.anims.generateFrameNumbers('player_walk', { start: 0, end: 3 }),
+          frameRate: 8, repeat: -1 });
+
+      if (has('player_jump'))
+        scene.anims.create({ key: 'player_jump',
+          frames: scene.anims.generateFrameNumbers('player_jump', { start: 0, end: 0 }),
+          frameRate: 1, repeat: 0 });
+
+      if (has('player_hit'))
+        scene.anims.create({ key: 'player_hit',
+          frames: scene.anims.generateFrameNumbers('player_hit', { start: 0, end: 0 }),
+          frameRate: 1, repeat: 0 });
+
+      if (has('player_punch'))
+        scene.anims.create({ key: 'player_punch',
+          frames: scene.anims.generateFrameNumbers('player_punch', { start: 0, end: 5 }),
+          frameRate: 18, repeat: 0 });
+
+      if (has('player_sword'))
+        scene.anims.create({ key: 'player_sword',
+          frames: scene.anims.generateFrameNumbers('player_sword', { start: 0, end: 5 }),
+          frameRate: 11, repeat: 0 });
+
+      if (has('player_kick'))
+        scene.anims.create({ key: 'player_kick',
+          frames: scene.anims.generateFrameNumbers('player_kick', { start: 0, end: 4 }),
+          frameRate: 12, repeat: 0 });
+
+      this._void = FPS; // suppress unused warning
+    }
+
+    // Procedural fallback — only generated when no real assets are loaded
+    if (!has('player')) {
       const g = scene.make.graphics({ x: 0, y: 0, add: false });
-
-      // ── Legs / pants (dark navy) ──────────────────────────────────────────
-      g.fillStyle(0x1a237e);
-      g.fillRect(7,  54, 14, 20); // left leg
-      g.fillRect(27, 54, 14, 20); // right leg
-
-      // ── Boots (black, slightly wider) ─────────────────────────────────────
-      g.fillStyle(0x1a1a1a);
-      g.fillRect(5,  68, 16, 12); // left boot
-      g.fillRect(27, 68, 16, 12); // right boot
-      // boot highlight
-      g.fillStyle(0x333333);
-      g.fillRect(5,  68, 16, 3);
-      g.fillRect(27, 68, 16, 3);
-
-      // ── Belt (gold) ───────────────────────────────────────────────────────
-      g.fillStyle(0xe6ac00);
-      g.fillRect(6, 50, 36, 5);
-      g.fillStyle(0xffd740);
-      g.fillRect(6, 50, 36, 2);   // shine
-
-      // ── Torso / gi jacket (deep red) ─────────────────────────────────────
-      g.fillStyle(0xb71c1c);
-      g.fillRect(6, 26, 36, 25);  // main torso block
-
-      // gi fold lines (darker)
-      g.fillStyle(0x8b0000);
-      g.fillRect(20, 28, 3, 20);  // left lapel edge
-      g.fillRect(25, 28, 3, 20);  // right lapel edge
-
-      // centre white stripe (gi collar/lapels)
-      g.fillStyle(0xffffff);
-      g.fillRect(21, 26, 6, 22);
-
-      // torso shadow (bottom)
-      g.fillStyle(0x8b0000);
-      g.fillRect(6, 46, 36, 5);
-
-      // ── Arms ─────────────────────────────────────────────────────────────
-      // left arm
-      g.fillStyle(0xb71c1c);
-      g.fillRect(0, 28, 8, 18);
-      // right arm
-      g.fillRect(40, 28, 8, 18);
-
-      // forearms / gloves (dark)
-      g.fillStyle(0x1a1a1a);
-      g.fillRect(0, 40, 8, 8);   // left glove
-      g.fillRect(40, 40, 8, 8);  // right glove
-      g.fillStyle(0x333333);
-      g.fillRect(0, 40, 8, 2);
-      g.fillRect(40, 40, 8, 2);
-
-      // ── Neck ─────────────────────────────────────────────────────────────
-      g.fillStyle(0xd4956a);
-      g.fillRect(19, 21, 10, 6);
-
-      // ── Head ─────────────────────────────────────────────────────────────
-      // face (skin)
-      g.fillStyle(0xd4956a);
-      g.fillRect(12, 5, 24, 18);
-
-      // hair (dark, top + sides)
-      g.fillStyle(0x1a1a1a);
-      g.fillRect(12, 3, 24, 7);   // top hair
-      g.fillRect(10, 5, 4, 12);   // left side hair
-      g.fillRect(34, 5, 4, 12);   // right side hair
-
-      // headband (red)
-      g.fillStyle(0xff1744);
-      g.fillRect(10, 9, 28, 4);
-      g.fillStyle(0xff6d6d);
-      g.fillRect(10, 9, 28, 1);   // headband shine
-
-      // eyes (right-facing; flipped for left)
-      g.fillStyle(0xffffff);
-      g.fillRect(15, 15, 8, 5);   // left eye white
-      g.fillRect(27, 15, 8, 5);   // right eye white
-      g.fillStyle(0x1a1a1a);
-      g.fillRect(17, 16, 4, 4);   // left pupil
-      g.fillRect(31, 16, 4, 4);   // right pupil
-      // eye glint
-      g.fillStyle(0xffffff);
-      g.fillRect(19, 16, 2, 2);
-      g.fillRect(33, 16, 2, 2);
-
-      // nose/mouth hint
-      g.fillStyle(0xb07050);
-      g.fillRect(22, 21, 4, 2);   // mouth line
-
-      g.generateTexture('player', 48, 80);
+      g.fillStyle(0x1a1a2e); g.fillRect(0, 0, 52, 93);
+      g.fillStyle(0xcc2222); g.fillRect(8, 20, 36, 38);
+      g.fillStyle(0xd4956a); g.fillRect(14, 4, 24, 18);
+      g.fillStyle(0x1a1a1a); g.fillRect(14, 2, 24, 8);
+      g.fillStyle(0xff1744); g.fillRect(12, 9, 28, 4);
+      g.generateTexture('player', 52, 93);
       g.destroy();
     }
 
@@ -387,11 +335,12 @@ export default class Player {
 
   _initSprite(scene, x, y) {
     this.sprite = scene.physics.add.sprite(x, y, 'player');
-    // Physics body skips the wide-brim hat (top ~20 px) for accurate collisions
     this.sprite.body.setSize(38, 70);
     this.sprite.body.setOffset(7, 20);
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setDepth(5);
+    // Flag so states know whether to call anims.play() or setFrame()
+    this._anims = scene.anims.exists('player_idle');
   }
 
   _initHitbox(scene) {
@@ -524,6 +473,15 @@ export default class Player {
   _syncHitbox() {
     this.attackHitbox.x = this.sprite.x + this.facing * this._hitOffset;
     this.attackHitbox.y = this.sprite.y;
+  }
+
+  // Play a named animation if available; otherwise clear tint so the sprite
+  // looks normal (setFrame-based approach is gone — anims handle everything).
+  _play(key) {
+    this.sprite.clearTint();
+    if (this._anims && this.sprite.anims) {
+      this.sprite.anims.play(key, true);
+    }
   }
 
   _tint(color) { this.sprite.setTint(color); }

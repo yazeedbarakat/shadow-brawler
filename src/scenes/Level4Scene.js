@@ -18,8 +18,9 @@ export default class Level4Scene extends Phaser.Scene {
 
   preload() {
     preloadAssets(this, [
-      'player', 'enemy_heavy',
-      'pickup_sword', 'pickup_armor', 'proj_star',
+      'player', 'player_walk', 'player_jump', 'player_hit',
+      'player_punch', 'player_sword', 'player_kick',
+      'enemy_heavy', 'pickup_sword', 'pickup_armor', 'proj_star',
       'bg_castle', 'plat_castle',
     ]);
   }

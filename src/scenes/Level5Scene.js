@@ -19,8 +19,9 @@ export default class Level5Scene extends Phaser.Scene {
 
   preload() {
     preloadAssets(this, [
-      'player', 'boss',
-      'pickup_sword', 'proj_star', 'proj_boss',
+      'player', 'player_walk', 'player_jump', 'player_hit',
+      'player_punch', 'player_sword', 'player_kick',
+      'boss', 'pickup_sword', 'proj_star', 'proj_boss',
       'bg_throne', 'plat_boss',
     ]);
   }

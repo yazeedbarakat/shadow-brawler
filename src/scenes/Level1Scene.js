@@ -17,8 +17,9 @@ export default class Level1Scene extends Phaser.Scene {
 
   preload() {
     preloadAssets(this, [
-      'player', 'enemy',
-      'pickup_sword', 'proj_star',
+      'player', 'player_walk', 'player_jump', 'player_hit',
+      'player_punch', 'player_sword', 'player_kick',
+      'enemy', 'pickup_sword', 'proj_star',
       'bg_city', 'plat_city',
     ]);
   }
