@@ -1,0 +1,378 @@
+/* global Phaser */
+import Player       from '../characters/Player.js';
+import Enemy        from '../characters/Enemy.js';
+import RangedEnemy  from '../characters/RangedEnemy.js';
+import CombatSystem from '../systems/CombatSystem.js';
+import WeaponSystem from '../systems/WeaponSystem.js';
+import HUD          from '../systems/HUD.js';
+import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
+
+const WORLD_W    = 1600;
+const WORLD_H    = 450;
+const GROUND_TOP = WORLD_H - 20;
+
+export default class Level3Scene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'Level3Scene' });
+  }
+
+  preload() {
+    preloadAssets(this, [
+      'player', 'enemy', 'enemy_ranged',
+      'pickup_throwingstar', 'proj_star', 'proj_enemy',
+      'bg_forest', 'plat_forest',
+    ]);
+  }
+
+  create() {
+    this.score     = 0;
+    this._done     = false;
+    this._doorOpen = false;
+
+    this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
+
+    this._buildBackground();
+    this._platforms = this._buildPlatforms();
+    this._buildExit();
+    this._createPlayer();
+    this._createEnemies();
+    this._setupSystems();
+    this._buildHUD();
+
+    this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
+    this.cameras.main.setDeadzone(80, 60);
+  }
+
+  // ─── Background: dark forest ──────────────────────────────────────────────
+
+  _buildBackground() {
+    if (assetLoaded(this, 'bg_forest')) {
+      this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_forest').setDisplaySize(WORLD_W, WORLD_H);
+      return;
+    }
+    // Black night sky
+    this.add.rectangle(WORLD_W / 2, WORLD_H / 2, WORLD_W, WORLD_H, 0x000005);
+
+    // Stars
+    for (let i = 0; i < 90; i++) {
+      const sx = (i * 293 + 15) % WORLD_W;
+      const sy = 4 + (i * 127)  % 120;
+      const br = 0.2 + (i % 6) * 0.08;
+      this.add.rectangle(sx, sy, i % 8 === 0 ? 2 : 1, i % 8 === 0 ? 2 : 1, 0xffffff, br);
+    }
+
+    // Moon (partial cloud coverage)
+    this.add.rectangle(1480, 52, 50, 50, 0xcce8ff);
+    this.add.rectangle(1494, 48, 22, 28, 0x000005); // crescent shadow bite
+    this.add.rectangle(1480, 52, 100, 100, 0x8899cc, 0.07); // glow
+
+    // Distant tree silhouettes — three layers of depth
+    this._drawTreeLayer(0x030a02, 0.55, 22, 260, 340, 26); // far (barely visible)
+    this._drawTreeLayer(0x071404, 0.75, 18, 200, 290, 20); // mid
+    this._drawTreeLayer(0x0c2008, 0.92, 14, 150, 240, 16); // near
+
+    // Atmospheric fog bands
+    [210, 270, 330, 390].forEach((fy, i) => {
+      this.add.rectangle(WORLD_W / 2, fy, WORLD_W, 28 - i * 4, 0x112211, 0.14 - i * 0.02);
+    });
+
+    // Ground-level root tangles and undergrowth
+    for (let i = 0; i < 24; i++) {
+      const rx = (i * 197 + 40)  % WORLD_W;
+      const rh = 10 + (i * 37)   % 20;
+      this.add.rectangle(rx, GROUND_TOP - rh / 2, 24 + (i % 4) * 8, rh, 0x0a1a08, 0.85);
+    }
+
+    // Fireflies — scattered glowing dots
+    for (let i = 0; i < 40; i++) {
+      const fx = (i * 191 + 25)  % WORLD_W;
+      const fy = 80 + (i * 113)  % 270;
+      this.add.rectangle(fx, fy, 2, 2, 0x88ff66, 0.25 + (i % 5) * 0.12);
+    }
+
+    // Ground surface
+    this.add.rectangle(WORLD_W / 2, WORLD_H - 4,  WORLD_W, 18, 0x020602);
+    this.add.rectangle(WORLD_W / 2, WORLD_H - 20, WORLD_W,  4, 0x0c1c0a);
+  }
+
+  /**
+   * Draws a layer of tree silhouettes using stacked rectangles.
+   * Trees are pine-shaped (wide canopy narrowing to a point at top).
+   */
+  _drawTreeLayer(color, alpha, count, minH, maxH, trunk) {
+    const step = Math.floor(WORLD_W / count);
+    for (let i = 0; i < count; i++) {
+      const tx = (i * step + (i * 47) % step + 10) % WORLD_W;
+      const th = minH + (tx * 7 + i * 31) % (maxH - minH);
+      const tw = 22 + (i * 19) % 28; // 22–50 px wide base
+
+      // Trunk (narrow)
+      this.add.rectangle(tx, GROUND_TOP - trunk / 2, tw * 0.28, trunk, color, alpha * 0.7);
+
+      // Canopy — 4 layers of decreasing width, each slightly above the last
+      const layers = 4;
+      for (let l = 0; l < layers; l++) {
+        const fraction = 1 - l / layers;
+        const lw = tw * fraction;
+        const lh = (th / layers) * 1.2;
+        const ly = GROUND_TOP - trunk - lh * l - lh / 2;
+        this.add.rectangle(tx, ly, lw, lh + 4, color, alpha * (0.8 + l * 0.05));
+      }
+    }
+  }
+
+  // ─── Platforms: mossy stone / dark forest logs ────────────────────────────
+
+  _buildPlatforms() {
+    const MOSS  = 0x1e3e18;  // dark mossy green
+    const TOP   = 0x2c6122;  // lighter green moss on top surface
+    const UNDER = 0x0e1e0a;  // dark underside shadow
+
+    const defs = [
+      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x030803, edge: false },
+      { x: 192,  y: 366, w: 148 }, // P1 — starting step
+      { x: 382,  y: 304, w: 178 }, // P2 — melee enemy 1
+      { x: 606,  y: 248, w: 162 }, // P3 — ranged enemy 1
+      { x: 825,  y: 308, w: 172 }, // P4 — melee enemy 2
+      { x: 1044, y: 252, w: 156 }, // P5 — ranged enemy 2 + throwing star pickup
+      { x: 1262, y: 306, w: 178 }, // P6 — melee enemy 3
+      { x: 1478, y: 366, w: 152 }, // P7 — approach to exit
+    ];
+
+    const PLAT_KEY = 'plat_forest';
+    const useTex   = assetLoaded(this, PLAT_KEY);
+
+    return defs.map(({ x, y, w, h = 16, color = MOSS, edge = true }) => {
+      const plat = useTex
+        ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
+        : this.add.rectangle(x, y, w, h, color);
+      this.physics.add.existing(plat, true);
+
+      if (!useTex && edge) {
+        this.add.rectangle(x, y - h / 2 + 1, w, 4, TOP);
+        this.add.rectangle(x, y + h / 2 - 1, w, 2, UNDER);
+        for (let kx = x - w / 2 + 14; kx < x + w / 2 - 8; kx += 22) {
+          this.add.rectangle(kx, y, 2, h - 4, UNDER, 0.55);
+        }
+      }
+      return plat;
+    });
+  }
+
+  // ─── Exit door ────────────────────────────────────────────────────────────
+
+  _buildExit() {
+    const dx = WORLD_W - 44;
+    const dh = 100;
+    const dy = GROUND_TOP - dh / 2;
+
+    // Tree-trunk framing (natural arch)
+    this.add.rectangle(dx - 32, dy, 14, dh + 20, 0x0c2008).setDepth(2);
+    this.add.rectangle(dx + 32, dy, 14, dh + 20, 0x0c2008).setDepth(2);
+    this.add.rectangle(dx, dy - dh / 2 - 6, 80, 14,  0x0c2008).setDepth(2);
+
+    // Door body (dark undergrowth / vines blocking path)
+    this._door = this.add.rectangle(dx, dy, 50, dh, 0x040c04).setDepth(3);
+
+    // Vine texture on locked door
+    [-10, 10].forEach(ox => {
+      this.add.rectangle(dx + ox, dy, 4, dh - 8, 0x0e1e0c, 0.9).setDepth(4);
+    });
+
+    this._lockGem = this.add.rectangle(dx, dy, 10, 10, 0x33aa22).setDepth(5);
+
+    this._doorTxt = this.add.text(dx, dy - dh / 2 - 14, 'OVERGROWN', {
+      fontSize: '9px', fontFamily: 'monospace', color: '#226622',
+    }).setOrigin(0.5).setDepth(5);
+
+    this._arrow = this.add.text(dx - 38, dy, '>>', {
+      fontSize: '18px', fontFamily: 'monospace', color: '#44ff88',
+    }).setOrigin(0.5).setDepth(5).setAlpha(0);
+
+    this._doorZone = this.add.rectangle(dx, dy, 70, dh + 14, 0x000000, 0);
+    this.physics.add.existing(this._doorZone, true);
+    this._dx = dx; this._dy = dy;
+  }
+
+  // ─── Player ───────────────────────────────────────────────────────────────
+
+  _createPlayer() {
+    this.player = new Player(this, 60, 340);
+    this.physics.add.collider(this.player.sprite, this._platforms);
+    this.events.on('player-dead', () => this._endGame(false));
+  }
+
+  // ─── Enemies: 3 melee (fast/low-hp) + 2 ranged ────────────────────────────
+
+  _createEnemies() {
+    this.enemies        = [];
+    this.enemyGroup     = this.physics.add.group();
+    this._rangedEnemies = [];
+
+    // Shared configs
+    const meleeCfg  = { health: 40, speed: 115, chaseSpeed: 165,
+                        detectionRange: 270, contactDamage: 10,
+                        color: 0x1a6618 };   // dark forest green
+    const rangedCfg = { health: 40, speed: 95,  chaseSpeed: 138,
+                        detectionRange: 300, contactDamage: 8,
+                        color: 0x116614, textureKey: 'enemy_ranged',
+                        shootRange: 290, minShootRange: 88,
+                        shootRate: 2400, projDamage: 8 };
+
+    // Melee enemies — faster, rush the player
+    // Platform tops: P2 y=304−8=296, P4 y=308−8=300, P6 y=306−8=298
+    [
+      { x: 382,  y: 250 }, // P2
+      { x: 825,  y: 264 }, // P4
+      { x: 1262, y: 260 }, // P6
+    ].forEach(({ x, y }) => {
+      const e = new Enemy(this, x, y, meleeCfg);
+      this.enemies.push(e);
+      this.enemyGroup.add(e.sprite);
+    });
+
+    // Ranged enemies — stop and shoot glowing projectiles
+    // Platform tops: P3 y=248−8=240, P5 y=252−8=244
+    [
+      { x: 606,  y: 202 }, // P3
+      { x: 1044, y: 206 }, // P5
+    ].forEach(({ x, y }) => {
+      const re = new RangedEnemy(this, x, y, rangedCfg);
+      this.enemies.push(re);
+      this._rangedEnemies.push(re);
+      this.enemyGroup.add(re.sprite);
+    });
+
+    this.physics.add.collider(this.enemyGroup, this._platforms);
+  }
+
+  // ─── Systems + pickups ────────────────────────────────────────────────────
+
+  _setupSystems() {
+    this.weaponSystem = new WeaponSystem(this, this.player);
+    this.weaponSystem.setupProjectileOverlaps(this.enemyGroup, () => {
+      this.score += 100;
+      this._checkDoorUnlock();
+    });
+
+    this.combat = new CombatSystem(this);
+    this.combat.setupOverlaps(this.player, this.enemyGroup, {
+      onEnemyKilled: () => { this.score += 100; this._checkDoorUnlock(); },
+      onPlayerDied:  () => this._endGame(false),
+    });
+
+    // Wire ranged enemies' projectiles → player damage
+    this._rangedEnemies.forEach(re => {
+      re.setupProjectileOverlap(this.player.sprite, dmg => {
+        const dead = this.player.takeDamage(dmg);
+        if (dead) this._endGame(false);
+      });
+    });
+
+    // Throwing star on P5 — near the ranged enemy guarding it
+    this.weaponSystem.addPickup(1044, 214, 'throwingstar');
+
+    this.physics.add.overlap(
+      this.player.sprite,
+      this._doorZone,
+      () => { if (this._doorOpen && !this._done) this._enterExit(); },
+    );
+  }
+
+  // ─── HUD ──────────────────────────────────────────────────────────────────
+
+  _buildHUD() {
+    this._hud = new HUD(this, 'LEVEL 3 — DARK FOREST');
+
+    const sf = 0;
+    this._scoreTxt = this.add.text(14, 62, 'Score: 0', {
+      fontSize: '13px', fontFamily: 'monospace', color: '#ffff55',
+    }).setScrollFactor(sf).setDepth(22);
+
+    this._enemyTxt = this.add.text(14, 78, 'Enemies: 5', {
+      fontSize: '12px', fontFamily: 'monospace', color: '#ff6666',
+    }).setScrollFactor(sf).setDepth(22);
+
+    // Warn player about ranged enemies
+    this.add.text(14, 94, '! 2 enemies shoot projectiles', {
+      fontSize: '9px', fontFamily: 'monospace', color: '#33aa22',
+    }).setScrollFactor(sf).setDepth(22);
+
+    this._stateTxt = this.add.text(790, 62, '', {
+      fontSize: '10px', fontFamily: 'monospace', color: '#1a2d3a',
+    }).setOrigin(1, 0).setScrollFactor(sf).setDepth(22);
+
+    this._noticeTxt = this.add.text(400, 88, '', {
+      fontSize: '16px', fontFamily: 'monospace', color: '#44ff88',
+      stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
+  }
+
+  // ─── Door unlock ──────────────────────────────────────────────────────────
+
+  _checkDoorUnlock() {
+    if (!this._doorOpen && this.enemies.every(e => e.isDead)) this._openDoor();
+  }
+
+  _openDoor() {
+    this._doorOpen = true;
+
+    this._door.setFillStyle(0x0e2e0e);
+    this._lockGem.setFillStyle(0x44ff88);
+    this._doorTxt.setText('EXIT').setColor('#44ff88');
+
+    this.tweens.add({
+      targets: this._door, alpha: 0.55, yoyo: true, repeat: -1,
+      duration: 560, ease: 'Sine.easeInOut',
+    });
+    this._arrow.setAlpha(1);
+    this.tweens.add({
+      targets: this._arrow, x: this._dx - 20,
+      yoyo: true, repeat: -1, duration: 380, ease: 'Sine.easeInOut',
+    });
+
+    this._noticeTxt.setText('FOREST CLEARED   PATH OPEN  >>').setAlpha(1);
+    this.tweens.add({
+      targets: this._noticeTxt, alpha: 0, duration: 2200, delay: 1200, ease: 'Power2',
+    });
+  }
+
+  _enterExit() {
+    this._done = true;
+    this.cameras.main.flash(380, 200, 255, 200);
+    this.time.delayedCall(420, () => {
+      this.scene.start('Level4Scene', { score: this.score });
+    });
+  }
+
+  // ─── Update ───────────────────────────────────────────────────────────────
+
+  update(time, delta) {
+    if (this._done) return;
+
+    this.player.update(time, delta);
+    this.weaponSystem.update();
+    this._hud.update(this.player);
+
+    // Enemy update — RangedEnemy.update() handles projectile firing automatically
+    const alive = this.enemies.filter(e => e.sprite.active);
+    alive.forEach(e => e.update(this.player, delta));
+    this.enemies = alive;
+
+    this._scoreTxt.setText(`Score: ${this.score}`);
+    const liveCount = this.enemies.filter(e => !e.isDead).length;
+    this._enemyTxt
+      .setText(liveCount > 0 ? `Enemies: ${liveCount}` : 'All clear!')
+      .setColor(liveCount > 0 ? '#ff6666' : '#44ff88');
+    this._stateTxt.setText(this.player.state ?? '');
+  }
+
+  _endGame(win) {
+    if (this._done) return;
+    this._done = true;
+    this.time.delayedCall(400, () => {
+      this.scene.start('GameOverScene', { score: this.score, win, originScene: 'Level3Scene' });
+    });
+  }
+}
