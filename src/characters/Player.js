@@ -374,9 +374,11 @@ export default class Player {
 
   _initSprite(scene, x, y) {
     this.sprite = scene.physics.add.sprite(x, y, 'player');
+    // Physics body skips the wide-brim hat (top ~20 px) for accurate collisions
+    this.sprite.body.setSize(38, 70);
+    this.sprite.body.setOffset(7, 20);
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setDepth(5);
-    this.sprite.setScale(0.35);
   }
 
   _initHitbox(scene) {

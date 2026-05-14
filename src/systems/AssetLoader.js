@@ -22,7 +22,7 @@
 export const ASSET_DEFS = {
 
   // ── Characters ─────────────────────────────────────────────────────────────
-  player:              { path: '/assets/sprites/player.png',              w: 40,   h: 60  },
+  player:              { path: '/assets/sprites/player.png',              w: 52,   h: 93  },
   enemy:               { path: '/assets/sprites/enemy.png',               w: 36,   h: 52  },
   enemy_heavy:         { path: '/assets/sprites/enemy_heavy.png',         w: 48,   h: 64  },
   enemy_ranged:        { path: '/assets/sprites/enemy_ranged.png',        w: 36,   h: 52  },
