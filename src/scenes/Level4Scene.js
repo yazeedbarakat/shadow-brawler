@@ -250,10 +250,6 @@ export default class Level4Scene extends Phaser.Scene {
       onPlayerDied:  () => this._endGame(false),
     });
 
-    // Armor pickup RIGHT at the start so the player gets it before engaging
-    this._armorSystem.addPickup(85, 414);
-
-    this.weaponSystem.addPickup(900, 414, 'sword');
 
     this.physics.add.overlap(
       this.player.sprite,

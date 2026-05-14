@@ -205,25 +205,78 @@ export default class Enemy {
     if (!scene.textures.exists(key)) {
       const g = scene.make.graphics({ x: 0, y: 0, add: false });
 
-      // Body
-      g.fillStyle(color);
-      g.fillRect(0, 0, w, h);
+      // Proportional helpers
+      const px = (fx) => Math.round(fx * w / 36);
+      const py = (fy) => Math.round(fy * h / 52);
 
-      // Head / upper highlight
-      const light = Phaser.Display.Color.ValueToColor(color).lighten(22).color;
-      g.fillStyle(light);
-      g.fillRect(4, 2, w - 8, 18);
+      // ── Legs (dark jeans) ───────────────────────────────────────────────
+      g.fillStyle(0x1a2e4a);
+      g.fillRect(px(4),  py(36), px(12), h - py(36)); // left leg
+      g.fillRect(px(20), py(36), px(12), h - py(36)); // right leg
 
-      // Eyes (face right; sprite.setFlipX mirrors them for left-facing)
+      // ── Boots (black) ───────────────────────────────────────────────────
+      g.fillStyle(0x0d0d0d);
+      g.fillRect(px(3),  py(44), px(13), h - py(44)); // left boot
+      g.fillRect(px(20), py(44), px(13), h - py(44)); // right boot
+      g.fillStyle(0x1e1e1e);
+      g.fillRect(px(3),  py(44), px(13), py(2)); // left boot highlight
+      g.fillRect(px(20), py(44), px(13), py(2)); // right boot highlight
+
+      // ── Torso (hoodie, tinted with enemy colour) ─────────────────────
+      const darkBody = Phaser.Display.Color.ValueToColor(color).darken(30).color;
+      const midBody  = Phaser.Display.Color.ValueToColor(color).darken(10).color;
+      g.fillStyle(midBody);
+      g.fillRect(px(3), py(22), px(30), py(15)); // main torso
+
+      // hoodie front zipper strip
+      g.fillStyle(darkBody);
+      g.fillRect(px(16), py(24), px(4), py(12));
+
+      // torso bottom shadow
+      g.fillStyle(darkBody);
+      g.fillRect(px(3), py(34), px(30), py(3));
+
+      // ── Arms ─────────────────────────────────────────────────────────
+      g.fillStyle(midBody);
+      g.fillRect(0,      py(23), px(5), py(13)); // left arm
+      g.fillRect(px(31), py(23), px(5), py(13)); // right arm
+
+      // Gloves / fists (dark)
+      g.fillStyle(0x111111);
+      g.fillRect(0,      py(35), px(5), py(5)); // left glove
+      g.fillRect(px(31), py(35), px(5), py(5)); // right glove
+
+      // ── Neck ─────────────────────────────────────────────────────────
+      g.fillStyle(0xc0845a);
+      g.fillRect(px(14), py(18), px(8), py(5));
+
+      // ── Head ─────────────────────────────────────────────────────────
+      // Face (skin)
+      g.fillStyle(0xc0845a);
+      g.fillRect(px(8), py(4), px(20), py(15));
+
+      // Short dark hair (buzz-cut / crew-cut)
+      g.fillStyle(0x1a0800);
+      g.fillRect(px(8),  py(2),  px(20), py(6));  // top
+      g.fillRect(px(6),  py(4),  px(4),  py(10)); // left side
+      g.fillRect(px(26), py(4),  px(4),  py(10)); // right side
+
+      // Eyes (menacing — right-facing; sprite flips for left)
       g.fillStyle(0xffffff);
-      g.fillRect(w - 16, 6, 10, 8);
+      g.fillRect(px(10), py(11), px(7), py(4)); // left eye
+      g.fillRect(px(21), py(11), px(7), py(4)); // right eye
       g.fillStyle(0x110000);
-      g.fillRect(w - 12, 7, 6, 6);  // pupil
+      g.fillRect(px(13), py(11), px(4), py(4)); // left pupil
+      g.fillRect(px(24), py(11), px(4), py(4)); // right pupil
 
-      // Jaw stripe
-      const dark = Phaser.Display.Color.ValueToColor(color).darken(25).color;
-      g.fillStyle(dark);
-      g.fillRect(0, h - 14, w, 6);
+      // Angry brows (angled inward = menacing)
+      g.fillStyle(0x1a0800);
+      g.fillRect(px(10), py(9),  px(8), py(2)); // left brow
+      g.fillRect(px(20), py(9),  px(8), py(2)); // right brow
+
+      // Mouth / jaw line
+      g.fillStyle(0x9a6440);
+      g.fillRect(px(15), py(17), px(6), py(2));
 
       g.generateTexture(key, w, h);
       g.destroy();

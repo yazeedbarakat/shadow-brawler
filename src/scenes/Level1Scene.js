@@ -255,8 +255,6 @@ export default class Level1Scene extends Phaser.Scene {
       onPlayerDied: () => this._endGame(false),
     });
 
-    // Single sword pickup floats above P5
-    this.weaponSystem.addPickup(700, 414, 'sword');
 
     // Walk-into-door triggers level transition (only when door is open)
     this.physics.add.overlap(

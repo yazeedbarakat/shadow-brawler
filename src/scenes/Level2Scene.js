@@ -243,9 +243,6 @@ export default class Level2Scene extends Phaser.Scene {
       onPlayerDied:  () => this._endGame(false),
     });
 
-    // Sword on P3 (guarded by enemy 2) — reward for fighting through
-    this.weaponSystem.addPickup(550, 414, 'sword');
-    this.weaponSystem.addPickup(1050, 414, 'throwingstar');
 
     this.physics.add.overlap(
       this.player.sprite,

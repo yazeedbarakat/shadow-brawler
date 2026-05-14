@@ -264,8 +264,6 @@ export default class Level3Scene extends Phaser.Scene {
       });
     });
 
-    // Throwing star on P5 — near the ranged enemy guarding it
-    this.weaponSystem.addPickup(1000, 414, 'throwingstar');
 
     this.physics.add.overlap(
       this.player.sprite,

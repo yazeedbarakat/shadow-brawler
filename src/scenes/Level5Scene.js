@@ -178,8 +178,6 @@ export default class Level5Scene extends Phaser.Scene {
     // WeaponSystem for player weapons (throwing stars can hit boss)
     this.weaponSystem = new WeaponSystem(this, this.player);
 
-    // Add sword pickup near player spawn
-    this.weaponSystem.addPickup(160, 414, 'sword');
 
     // Boss sprite acts as a single-member "enemy group" for WeaponSystem
     const bossGroup = this.physics.add.group();
