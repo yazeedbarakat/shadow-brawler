@@ -310,6 +310,7 @@ export default class Player {
     this.sprite = scene.physics.add.sprite(x, y, 'player');
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setDepth(5);
+    this.sprite.setScale(0.6);
   }
 
   _initHitbox(scene) {
