@@ -5,7 +5,7 @@ import CombatSystem from '../systems/CombatSystem.js';
 import WeaponSystem from '../systems/WeaponSystem.js';
 import ArmorSystem  from '../systems/ArmorSystem.js';
 import HUD          from '../systems/HUD.js';
-import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
+import { preloadAssets, assetLoaded, PLAYER_KEYS } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
 const WORLD_W    = 800;
@@ -19,8 +19,7 @@ export default class Level4Scene extends Phaser.Scene {
 
   preload() {
     preloadAssets(this, [
-      'player', 'player_walk', 'player_jump', 'player_hit',
-      'player_punch', 'player_sword', 'player_kick',
+      ...PLAYER_KEYS,
       'enemy_heavy', 'pickup_sword', 'pickup_armor', 'proj_star',
       'bg_castle', 'plat_castle', 'healthbar',
     ]);
