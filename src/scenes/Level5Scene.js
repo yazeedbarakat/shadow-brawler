@@ -9,7 +9,7 @@ import { addWeather } from '../systems/WeatherSystem.js';
 // Canonical melee damage values — mirrors CombatSystem.js so no import needed here
 const ATTACK_DAMAGE = { ATTACK_PUNCH: 10, ATTACK_KICK: 15, ATTACK_SWORD: 25 };
 
-const WORLD_W    = 1200;
+const WORLD_W    = 800;
 const WORLD_H    = 450;
 const GROUND_TOP = WORLD_H - 60;
 
@@ -42,8 +42,6 @@ export default class Level5Scene extends Phaser.Scene {
     addWeather(this, 'ash');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
-    this.cameras.main.setDeadzone(80, 60);
 
     this.events.on('boss-dead', () => this._showVictory());
     this.events.on('boss-phase', n => this._onPhaseChange(n));
@@ -170,7 +168,7 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── Boss ────────────────────────────────────────────────────────────────
 
   _createBoss() {
-    this._boss = new Boss(this, 950, 342);
+    this._boss = new Boss(this, 580, 342);
     // Boss collides with platforms and world bounds (already set in Boss constructor)
     this.physics.add.collider(this._boss.sprite, this._platforms);
   }

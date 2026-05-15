@@ -7,7 +7,7 @@ import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
-const WORLD_W    = 1600;
+const WORLD_W    = 800;
 const WORLD_H    = 450;
 const GROUND_TOP = WORLD_H - 60; // top surface of the ground platform
 
@@ -40,8 +40,6 @@ export default class Level1Scene extends Phaser.Scene {
     addWeather(this, 'leaves');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
-    this.cameras.main.setDeadzone(80, 60);
   }
 
   // ─── Background ───────────────────────────────────────────────────────────
@@ -107,9 +105,9 @@ export default class Level1Scene extends Phaser.Scene {
     // Target platform tops: P3 y=252−8=244, P4 y=328−8=320, P6 y=308−8=300
     // Enemy h=52 → center sits at platformTop − 26
     const spawns = [
-      { x: 400,  y: 364 },
-      { x: 800,  y: 364 },
-      { x: 1200, y: 364 },
+      { x: 250, y: 364 },
+      { x: 450, y: 364 },
+      { x: 650, y: 364 },
     ];
 
     spawns.forEach(({ x, y }) => {

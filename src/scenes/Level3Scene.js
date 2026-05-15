@@ -8,7 +8,7 @@ import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
-const WORLD_W    = 1600;
+const WORLD_W    = 800;
 const WORLD_H    = 450;
 const GROUND_TOP = WORLD_H - 60;
 
@@ -41,8 +41,6 @@ export default class Level3Scene extends Phaser.Scene {
     addWeather(this, 'leaves');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
-    this.cameras.main.setDeadzone(80, 60);
   }
 
   // ─── Background: dark forest ──────────────────────────────────────────────
@@ -185,9 +183,9 @@ export default class Level3Scene extends Phaser.Scene {
     // Melee enemies — faster, rush the player
     // Platform tops: P2 y=304−8=296, P4 y=308−8=300, P6 y=306−8=298
     [
-      { x: 350,  y: 364 },
-      { x: 800,  y: 364 },
-      { x: 1200, y: 364 },
+      { x: 250, y: 364 },
+      { x: 470, y: 364 },
+      { x: 680, y: 364 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, meleeCfg);
       this.enemies.push(e);
@@ -197,8 +195,8 @@ export default class Level3Scene extends Phaser.Scene {
     // Ranged enemies — stop and shoot glowing projectiles
     // Platform tops: P3 y=248−8=240, P5 y=252−8=244
     [
-      { x: 600,  y: 364 },
-      { x: 1000, y: 364 },
+      { x: 360, y: 364 },
+      { x: 580, y: 364 },
     ].forEach(({ x, y }) => {
       const re = new RangedEnemy(this, x, y, rangedCfg);
       this.enemies.push(re);

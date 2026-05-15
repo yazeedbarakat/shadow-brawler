@@ -8,7 +8,7 @@ import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
-const WORLD_W    = 1600;
+const WORLD_W    = 800;
 const WORLD_H    = 450;
 const GROUND_TOP = WORLD_H - 60;
 
@@ -42,8 +42,6 @@ export default class Level4Scene extends Phaser.Scene {
     addWeather(this, 'embers');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
-    this.cameras.main.setDeadzone(80, 60);
   }
 
   // ─── Background: castle fortress ─────────────────────────────────────────
@@ -191,10 +189,10 @@ export default class Level4Scene extends Phaser.Scene {
     // Spawn above platforms so gravity settles them
     // P2 top=300, P3 top=244, P4 top=302, P6 top=300; enemy h=64 → center = top-32
     [
-      { x: 300,  y: 358 },
-      { x: 650,  y: 358 },
-      { x: 950,  y: 358 },
-      { x: 1250, y: 358 },
+      { x: 200, y: 358 },
+      { x: 370, y: 358 },
+      { x: 540, y: 358 },
+      { x: 700, y: 358 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, heavyCfg);
       this.enemies.push(e);

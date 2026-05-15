@@ -7,7 +7,7 @@ import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
-const WORLD_W    = 1600;
+const WORLD_W    = 800;
 const WORLD_H    = 450;
 const GROUND_TOP = WORLD_H - 60;
 
@@ -40,8 +40,6 @@ export default class Level2Scene extends Phaser.Scene {
     addWeather(this, 'snow');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
-    this.cameras.main.setDeadzone(80, 60);
   }
 
   // ─── Background: ancient temple ───────────────────────────────────────────
@@ -176,13 +174,13 @@ export default class Level2Scene extends Phaser.Scene {
     // Platform tops: P2 y=308−8=300, P3 y=252−8=244, P4 y=310−8=302, P6 y=308−8=300
     // Enemy center = top − 26 (half of 52px height)
     const spawns = [
-      { x: 300,  y: 364, cfg: { health: 80, speed: 78, chaseSpeed: 114,
+      { x: 200, y: 364, cfg: { health: 80, speed: 78, chaseSpeed: 114,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 600,  y: 364, cfg: { health: 80, speed: 76, chaseSpeed: 110,
+      { x: 370, y: 364, cfg: { health: 80, speed: 76, chaseSpeed: 110,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 900,  y: 364, cfg: { health: 80, speed: 80, chaseSpeed: 116,
+      { x: 540, y: 364, cfg: { health: 80, speed: 80, chaseSpeed: 116,
           detectionRange: 255, contactDamage: 12, color: 0xaa5522 } },
-      { x: 1200, y: 364, cfg: { health: 80, speed: 82, chaseSpeed: 118,
+      { x: 700, y: 364, cfg: { health: 80, speed: 82, chaseSpeed: 118,
           detectionRange: 265, contactDamage: 12, color: 0xaa5522 } },
     ];
 
