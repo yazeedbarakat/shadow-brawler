@@ -1,8 +1,10 @@
 // Canonical damage values per attack type.
 const ATTACK_DAMAGE = {
-  ATTACK_PUNCH: 10,
-  ATTACK_KICK:  15,
-  ATTACK_SWORD: 25,
+  // Legacy
+  ATTACK_PUNCH: 10, ATTACK_KICK: 15, ATTACK_SWORD: 25,
+  // New moveset
+  ATTACK_1: 22, ATTACK_2: 28, ATTACK_3: 45,
+  ATTACK_HEAVY: 65, ATTACK_AIR: 30, ATTACK_DASH: 40, COUNTER: 75,
 };
 
 // Weapon overrides — when this weapon is equipped the mapped attack deals different damage.

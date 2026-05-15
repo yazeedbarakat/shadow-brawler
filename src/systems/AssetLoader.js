@@ -21,14 +21,40 @@
  */
 export const ASSET_DEFS = {
 
-  // ── Player animation strips (each frame 52×93 px) ──────────────────────────
-  player:       { path: '/assets/sprites/player_idle.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
-  player_walk:  { path: '/assets/sprites/player_walk.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 4 frames
-  player_jump:  { path: '/assets/sprites/player_jump.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
-  player_hit:   { path: '/assets/sprites/player_hit.png',   w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 1 frame
-  player_punch: { path: '/assets/sprites/player_punch.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 6 frames
-  player_sword: { path: '/assets/sprites/player_sword.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 6 frames
-  player_kick:  { path: '/assets/sprites/player_kick.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 }, // 5 frames
+  // ── New player animation strips (52×80 px per frame) ──────────────────────
+  p_idle:        { path: '/assets/sprites/p_idle.png',        w: 312, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_walk:        { path: '/assets/sprites/p_walk.png',        w: 416, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_run:         { path: '/assets/sprites/p_run.png',         w: 416, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_sprint:      { path: '/assets/sprites/p_sprint.png',      w: 520, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_jump:        { path: '/assets/sprites/p_jump.png',        w: 208, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_fall:        { path: '/assets/sprites/p_fall.png',        w: 156, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_land:        { path: '/assets/sprites/p_land.png',        w: 156, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_dash:        { path: '/assets/sprites/p_dash.png',        w: 312, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_turn:        { path: '/assets/sprites/p_turn.png',        w: 208, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_crouch:      { path: '/assets/sprites/p_crouch.png',      w:  52, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_crouch_idle: { path: '/assets/sprites/p_crouch_idle.png', w:  52, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_crouch_walk: { path: '/assets/sprites/p_crouch_walk.png', w: 312, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_atk_light1:  { path: '/assets/sprites/p_atk_light1.png',  w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_atk_light2:  { path: '/assets/sprites/p_atk_light2.png',  w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_atk_heavy:   { path: '/assets/sprites/p_atk_heavy.png',   w: 416, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_combo1a:     { path: '/assets/sprites/p_combo1a.png',     w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_combo1b:     { path: '/assets/sprites/p_combo1b.png',     w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_combo1c:     { path: '/assets/sprites/p_combo1c.png',     w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_hurt:        { path: '/assets/sprites/p_hurt.png',        w: 156, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_block:       { path: '/assets/sprites/p_block.png',       w: 104, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_counter:     { path: '/assets/sprites/p_counter.png',     w: 260, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_dash_attack: { path: '/assets/sprites/p_dash_attack.png', w: 312, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_roll:        { path: '/assets/sprites/p_roll.png',        w: 312, h: 80, frameWidth: 52, frameHeight: 80 },
+  p_death:       { path: '/assets/sprites/p_death.png',       w: 520, h: 80, frameWidth: 52, frameHeight: 80 },
+
+  // ── Legacy player strips (52×93 px) — kept as fallbacks ───────────────────
+  player:       { path: '/assets/sprites/player_idle.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_walk:  { path: '/assets/sprites/player_walk.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_jump:  { path: '/assets/sprites/player_jump.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_hit:   { path: '/assets/sprites/player_hit.png',   w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_punch: { path: '/assets/sprites/player_punch.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_sword: { path: '/assets/sprites/player_sword.png', w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
+  player_kick:  { path: '/assets/sprites/player_kick.png',  w: 52, h: 93, frameWidth: 52, frameHeight: 93 },
   enemy:               { path: '/assets/sprites/enemy.png',               w: 36,   h: 52  },
   enemy_heavy:         { path: '/assets/sprites/enemy_heavy.png',         w: 48,   h: 64  },
   enemy_ranged:        { path: '/assets/sprites/enemy_ranged.png',        w: 36,   h: 52  },
@@ -75,6 +101,16 @@ export const ASSET_DEFS = {
  * Missing files (HTTP 404) are silently ignored by Phaser — the procedural
  * fallbacks inside create() then activate via assetLoaded() checks.
  */
+// All player sprite keys (new + legacy fallbacks). Spread into any scene's preloadAssets call.
+export const PLAYER_KEYS = [
+  'p_idle','p_walk','p_run','p_sprint','p_jump','p_fall','p_land',
+  'p_dash','p_turn','p_crouch','p_crouch_idle','p_crouch_walk',
+  'p_atk_light1','p_atk_light2','p_atk_heavy',
+  'p_combo1a','p_combo1b','p_combo1c',
+  'p_hurt','p_block','p_counter','p_dash_attack','p_roll','p_death',
+  'player','player_walk','player_jump','player_hit','player_punch','player_sword','player_kick',
+];
+
 export function preloadAssets(scene, keys) {
   keys.forEach(key => {
     const def = ASSET_DEFS[key];

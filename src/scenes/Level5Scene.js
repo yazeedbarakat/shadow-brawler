@@ -3,7 +3,7 @@ import Player       from '../characters/Player.js';
 import Boss         from '../characters/Boss.js';
 import WeaponSystem from '../systems/WeaponSystem.js';
 import HUD          from '../systems/HUD.js';
-import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
+import { preloadAssets, assetLoaded, PLAYER_KEYS } from '../systems/AssetLoader.js';
 import { addWeather } from '../systems/WeatherSystem.js';
 
 // Canonical melee damage values — mirrors CombatSystem.js so no import needed here
@@ -20,8 +20,7 @@ export default class Level5Scene extends Phaser.Scene {
 
   preload() {
     preloadAssets(this, [
-      'player', 'player_walk', 'player_jump', 'player_hit',
-      'player_punch', 'player_sword', 'player_kick',
+      ...PLAYER_KEYS,
       'boss', 'pickup_sword', 'proj_star', 'proj_boss',
       'bg_throne', 'plat_boss',
     ]);
