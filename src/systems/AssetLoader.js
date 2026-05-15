@@ -45,6 +45,9 @@ export const ASSET_DEFS = {
   proj_enemy:          { path: '/assets/sprites/proj_enemy.png',          w: 10,   h: 10  },
   proj_boss:           { path: '/assets/sprites/proj_boss.png',           w: 16,   h: 16  },
 
+  // ── Menu background ────────────────────────────────────────────────────────
+  bg_menu:             { path: '/assets/backgrounds/menu_bg.webp',          w: 960,  h: 540 },
+
   // ── Backgrounds (stretched to fill WORLD_W × WORLD_H) ─────────────────────
   bg_city:             { path: '/assets/backgrounds/level1theame.webp',   w: 1600, h: 450 },
   bg_temple:           { path: '/assets/backgrounds/level2theme.webp',    w: 1600, h: 450 },
