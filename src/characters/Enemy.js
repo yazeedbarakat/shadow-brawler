@@ -1,5 +1,8 @@
 /* global Phaser */
 
+// Set to true to show per-enemy health bars and hitbox helpers during development
+const DEBUG_BARS = false;
+
 // ─── Minimal State Machine (local — mirrors Player.js pattern) ─────────────────
 
 class SM {
@@ -293,6 +296,7 @@ export default class Enemy {
   }
 
   _buildHealthBar(scene, x, y) {
+    if (!DEBUG_BARS) return;
     const barW = this._w + 4;
     const barY = y - Math.round(this._h / 2) - 10;
     this._hpBg  = scene.add.rectangle(x, barY, barW,     7, 0x550000).setDepth(6);
@@ -342,13 +346,14 @@ export default class Enemy {
       this.sprite.x = Phaser.Math.Clamp(this.sprite.x, wb.left + hw, wb.right - hw);
     }
 
-    // Keep health bar tracking sprite position (skipped once DEAD destroys bars)
-    if (this.sm.current !== 'DEAD') {
+    // Keep health bar tracking sprite position (debug only)
+    if (DEBUG_BARS && this.sm.current !== 'DEAD') {
       this._updateHealthBar();
     }
   }
 
   _updateHealthBar() {
+    if (!DEBUG_BARS || !this._hpBg) return;
     const ratio  = this.health / this.maxHealth;
     const fullW  = this._w + 2;
     const curW   = fullW * ratio;

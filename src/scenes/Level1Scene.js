@@ -45,13 +45,17 @@ export default class Level1Scene extends Phaser.Scene {
   // ─── Background ───────────────────────────────────────────────────────────
 
   _buildBackground() {
-    if (assetLoaded(this, 'bg_level1')) {
+    if (assetLoaded(this, 'bg_city')) {
+      this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_city')
+        .setDisplaySize(WORLD_W, WORLD_H)
+        .setDepth(0);
+    } else if (assetLoaded(this, 'bg_level1')) {
       this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1')
         .setDisplaySize(WORLD_W, WORLD_H)
         .setDepth(0);
     } else {
-      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.4, WORLD_W, WORLD_H * 0.8, 0x3a0a0a);
-      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.85, WORLD_W, WORLD_H * 0.3, 0x1a0505);
+      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.4, WORLD_W, WORLD_H * 0.8, 0x1a1a2e);
+      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.85, WORLD_W, WORLD_H * 0.3, 0x0d0d1a);
     }
   }
 

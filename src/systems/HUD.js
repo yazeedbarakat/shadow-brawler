@@ -220,7 +220,6 @@ export default class HUD {
     this._bossContainer = [];  // all boss bar game objects (for show/hide)
 
     this._buildPlayerBar();
-    this._buildBossBar();
     this._buildWeaponSlot();
     this._buildCombo();
     this._listenEvents();
@@ -233,18 +232,17 @@ export default class HUD {
     const sc = this._scene;
 
     // ── Frame image dimensions ────────────────────────────────────────────────
-    // Source PNG is 3718×1152. Display at 300 wide, preserve aspect ratio → 93 tall.
+    // Source PNG is 3718×1152. Display at 350 wide, preserve aspect ratio → 108 tall.
     const HB_X      = 0;
     const HB_Y      = 0;
-    const HB_DISP_W = 300;
-    const HB_DISP_H = 93;   // Math.round(300 * 1152 / 3718)
+    const HB_DISP_W = 350;
+    const HB_DISP_H = 108;  // Math.round(350 * 1152 / 3718)
 
-    // ── Fill zone (screen coords, user-specified, relative to image origin) ───
-    // Starts just after the skull ornament, ends before the right decoration.
-    // Tweak FX / FY / FW / FH here if the overlay needs nudging.
-    const FX = 120;  // left edge of fill  (px from screen left)
-    const FW = 160;  // max fill width at 100% HP
-    const FH = 18;   // fill height
+    // ── Fill zone — calibrated to sit inside the frame interior ──────────────
+    // Proportionally scaled from the 300×93 reference calibration.
+    const FX = 140;  // left edge of fill (px from screen left)
+    const FW = 187;  // max fill width at 100% HP
+    const FH = 21;   // fill height (scaled with bar)
     const FY = HB_Y + Math.round((HB_DISP_H - FH) / 2);  // vertically centred
 
     // ── Red fill — depth ABOVE the frame so it shows through the channel ────────
@@ -383,21 +381,9 @@ export default class HUD {
     this._bossContainer.forEach(o => o.setAlpha(0));
   }
 
-  // ── Register a boss and reveal the bar ────────────────────────────────────
+  // ── Register a boss reference (bar removed — no visual) ──────────────────
   setBoss(enemy, name = 'BOSS') {
     this._boss = enemy;
-    this._bossNameTxt.setText(name);
-    // Fade in
-    this._scene.tweens.add({
-      targets: this._bossContainer,
-      alpha: 1,
-      duration: 600,
-      ease: 'Power2',
-      onComplete: () => {
-        // Restore shimmer to its own tween target (alpha was overridden)
-        this._bossShimGfx.setAlpha(0.4);
-      },
-    });
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -462,20 +448,7 @@ export default class HUD {
       this._hpGfx.fillRect(this._hpFillX, this._hpFillY, fillW, this._hpFillH);
     }
 
-    // ── Boss HP ───────────────────────────────────────────────────────────────
-    const b = boss ?? this._boss;
-    if (b && !b.isDead) {
-      this._drawBar(
-        this._bossGfx, this._bossShimGfx,
-        this._bossBarX, this._bossBarY, this._bossBarH,
-        BOSS_W,
-        Math.max(0, Math.min(1, b.health / b.maxHealth)),
-      );
-    } else if (b && b.isDead) {
-      // Drain the boss bar to 0 on death (already at 0 if killed properly)
-      this._bossGfx.clear();
-      this._bossShimGfx.clear();
-    }
+    // Boss bar removed — single player bar only
   }
 
   // ── Draw one demon-style bar ───────────────────────────────────────────────

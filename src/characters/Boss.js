@@ -92,7 +92,6 @@ export default class Boss {
 
     this._buildTexture(scene);
     this._buildSprite(scene, x, y);
-    this._buildHud(scene);
     this.projGroup = scene.physics.add.group();
   }
 
@@ -199,9 +198,11 @@ export default class Boss {
       if (this.sprite.active) this.sprite.setTint(this._cfg.baseTint);
     });
 
-    this._phaseLbl.setText(this._cfg.label).setColor(
-      n === 3 ? '#ff5500' : n === 2 ? '#ff8844' : '#aa4422',
-    );
+    if (this._phaseLbl) {
+      this._phaseLbl.setText(this._cfg.label).setColor(
+        n === 3 ? '#ff5500' : n === 2 ? '#ff8844' : '#aa4422',
+      );
+    }
 
     this.scene.events.emit('boss-phase', n);
   }
@@ -363,6 +364,7 @@ export default class Boss {
   }
 
   _refreshHpBar() {
+    if (!this._hpFill) return;
     const ratio = Math.max(0, this.health / this.maxHealth);
     this._hpFill.width    = this._BAR_W * ratio;
     this._hpFill.fillColor = ratio > 0.60 ? 0xcc2222 : ratio > 0.30 ? 0xff6600 : 0xff1111;
