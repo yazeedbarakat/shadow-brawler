@@ -335,6 +335,13 @@ export default class Enemy {
 
     this.sm.update(delta);
 
+    // Hard-clamp X so knockback can never push an enemy off the visible screen
+    if (this.sprite.body && this.sprite.body.enable) {
+      const hw = this._w / 2;
+      const wb = this.scene.physics.world.bounds;
+      this.sprite.x = Phaser.Math.Clamp(this.sprite.x, wb.left + hw, wb.right - hw);
+    }
+
     // Keep health bar tracking sprite position (skipped once DEAD destroys bars)
     if (this.sm.current !== 'DEAD') {
       this._updateHealthBar();
