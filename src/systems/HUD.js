@@ -247,8 +247,9 @@ export default class HUD {
     const FH = 18;   // fill height
     const FY = HB_Y + Math.round((HB_DISP_H - FH) / 2);  // vertically centred
 
-    // ── Red fill — drawn by Graphics every frame (reliable in all renderers) ──
-    this._hpGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 1);
+    // ── Red fill — depth ABOVE the frame so it shows through the channel ────────
+    // The frame PNG is opaque; fill must render on top of it, clipped to FX/FY/FW/FH.
+    this._hpGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 5);
 
     // ── Frame image — always on top, skull + border always fully visible ───────
     sc.add.image(HB_X, HB_Y, 'healthbar')
