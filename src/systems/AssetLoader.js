@@ -46,7 +46,7 @@ export const ASSET_DEFS = {
   proj_boss:           { path: '/assets/sprites/proj_boss.png',           w: 16,   h: 16  },
 
   // ── Menu background ────────────────────────────────────────────────────────
-  bg_menu:             { path: '/assets/backgrounds/menu_bg.webp',          w: 960,  h: 540 },
+  bg_menu:             { path: '/assets/backgrounds/menu_bg.png',           w: 960,  h: 540 },
 
   // ── Backgrounds (stretched to fill WORLD_W × WORLD_H) ─────────────────────
   bg_city:             { path: '/assets/backgrounds/level1theame.webp',   w: 1600, h: 450 },
