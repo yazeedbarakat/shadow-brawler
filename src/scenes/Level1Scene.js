@@ -21,7 +21,7 @@ export default class Level1Scene extends Phaser.Scene {
       'player', 'player_walk', 'player_jump', 'player_hit',
       'player_punch', 'player_sword', 'player_kick',
       'enemy', 'pickup_sword', 'proj_star',
-      'bg_level1', 'bg_level1_anim', 'bg_city', 'plat_city',
+      'bg_level1', 'bg_city', 'plat_city',
     ]);
   }
 
@@ -44,93 +44,17 @@ export default class Level1Scene extends Phaser.Scene {
     this.cameras.main.setDeadzone(80, 60);
   }
 
-  // ─── Background: animated red autumn ruins ────────────────────────────────
+  // ─── Background ───────────────────────────────────────────────────────────
 
   _buildBackground() {
-    const hasBase = assetLoaded(this, 'bg_level1');
-    const hasAnim = assetLoaded(this, 'bg_level1_anim');
-
-    if (!hasBase) {
-      // Procedural fallback: warm dusk sky
+    if (assetLoaded(this, 'bg_level1')) {
+      this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1')
+        .setDisplaySize(WORLD_W, WORLD_H)
+        .setDepth(0);
+    } else {
       this.add.rectangle(WORLD_W / 2, WORLD_H * 0.4, WORLD_W, WORLD_H * 0.8, 0x3a0a0a);
       this.add.rectangle(WORLD_W / 2, WORLD_H * 0.85, WORLD_W, WORLD_H * 0.3, 0x1a0505);
-      return;
     }
-
-    // ── Static base layer ──────────────────────────────────────────────────
-    this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1')
-      .setDisplaySize(WORLD_W, WORLD_H)
-      .setDepth(0);
-
-    if (!hasAnim) return;
-
-    // ── Animated overlay: cross-fade through 9 frames ─────────────────────
-    // Two sprites swap roles so one can fade in while the other fades out.
-    // Both are set to the same display size and centred on the world.
-    const TOTAL_FRAMES = 9;
-    const HOLD_MS      = 900;   // time each frame is fully visible
-    const FADE_MS      = 350;   // cross-fade duration
-
-    // _bgA is always the "current" visible frame (depth 1, alpha 1).
-    // _bgB is the "incoming" frame (depth 2, alpha 0 until it fades in).
-    // Both sprites are fully opaque when visible so the base image never
-    // bleeds through and causes white lines.
-    this._bgA = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
-      .setDisplaySize(WORLD_W, WORLD_H).setDepth(1).setAlpha(1);
-
-    this._bgB = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
-      .setDisplaySize(WORLD_W, WORLD_H).setDepth(2).setAlpha(0);
-
-    this._bgFrame   = 0;
-    this._bgFlipper = true;
-
-    const advanceFrame = () => {
-      this._bgFrame = (this._bgFrame + 1) % TOTAL_FRAMES;
-
-      const front = this._bgFlipper ? this._bgA : this._bgB;
-      const back  = this._bgFlipper ? this._bgB : this._bgA;
-
-      // Prepare incoming sprite: new frame, invisible, on top
-      back.setFrame(this._bgFrame).setAlpha(0).setDepth(2);
-      front.setDepth(1);
-
-      // Cross-dissolve: incoming fades to fully opaque, outgoing to transparent.
-      // At every instant back.alpha + front.alpha = 1, so no base bleed-through.
-      this.tweens.add({
-        targets:  back,
-        alpha:    1,
-        duration: FADE_MS,
-        ease:     'Sine.easeInOut',
-      });
-      this.tweens.add({
-        targets:  front,
-        alpha:    0,
-        duration: FADE_MS,
-        ease:     'Sine.easeInOut',
-      });
-
-      this._bgFlipper = !this._bgFlipper;
-    };
-
-    // Fire on a timer so it keeps looping independently of the game loop
-    this._bgTimer = this.time.addEvent({
-      delay:    HOLD_MS + FADE_MS,
-      callback: advanceFrame,
-      loop:     true,
-    });
-
-    // Subtle ambient light pulse — warm orange glow that breathes
-    this._ambientRect = this.add.rectangle(WORLD_W / 2, WORLD_H / 2, WORLD_W, WORLD_H, 0xff4400)
-      .setAlpha(0).setDepth(3).setBlendMode(Phaser.BlendModes.ADD);
-
-    this.tweens.add({
-      targets:  this._ambientRect,
-      alpha:    { from: 0, to: 0.04 },
-      duration: 2200,
-      yoyo:     true,
-      repeat:   -1,
-      ease:     'Sine.easeInOut',
-    });
   }
 
   // ─── Platforms: grey concrete ─────────────────────────────────────────────
