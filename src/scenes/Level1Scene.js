@@ -71,14 +71,18 @@ export default class Level1Scene extends Phaser.Scene {
     const HOLD_MS      = 900;   // time each frame is fully visible
     const FADE_MS      = 350;   // cross-fade duration
 
+    // _bgA is always the "current" visible frame (depth 1, alpha 1).
+    // _bgB is the "incoming" frame (depth 2, alpha 0 until it fades in).
+    // Both sprites are fully opaque when visible so the base image never
+    // bleeds through and causes white lines.
     this._bgA = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
-      .setDisplaySize(WORLD_W, WORLD_H).setDepth(1).setAlpha(0.72);
+      .setDisplaySize(WORLD_W, WORLD_H).setDepth(1).setAlpha(1);
 
     this._bgB = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
       .setDisplaySize(WORLD_W, WORLD_H).setDepth(2).setAlpha(0);
 
     this._bgFrame   = 0;
-    this._bgFlipper = true; // true = bgA is foreground, bgB is next incoming
+    this._bgFlipper = true;
 
     const advanceFrame = () => {
       this._bgFrame = (this._bgFrame + 1) % TOTAL_FRAMES;
@@ -86,13 +90,15 @@ export default class Level1Scene extends Phaser.Scene {
       const front = this._bgFlipper ? this._bgA : this._bgB;
       const back  = this._bgFlipper ? this._bgB : this._bgA;
 
+      // Prepare incoming sprite: new frame, invisible, on top
       back.setFrame(this._bgFrame).setAlpha(0).setDepth(2);
       front.setDepth(1);
 
-      // Fade the new frame in; fade the old one out simultaneously
+      // Cross-dissolve: incoming fades to fully opaque, outgoing to transparent.
+      // At every instant back.alpha + front.alpha = 1, so no base bleed-through.
       this.tweens.add({
         targets:  back,
-        alpha:    0.72,
+        alpha:    1,
         duration: FADE_MS,
         ease:     'Sine.easeInOut',
       });
