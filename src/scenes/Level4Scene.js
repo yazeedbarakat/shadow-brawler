@@ -223,29 +223,12 @@ export default class Level4Scene extends Phaser.Scene {
   // ─── HUD ──────────────────────────────────────────────────────────────────
 
   _buildHUD() {
-    this._hud = new HUD(this, 'LEVEL 4 — CASTLE FORTRESS');
-
-    const sf = 0;
-    this._scoreTxt = this.add.text(14, 62, 'Score: 0', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#ffff55',
-    }).setScrollFactor(sf).setDepth(22);
-
-    this._enemyTxt = this.add.text(14, 78, 'Guards: 4', {
-      fontSize: '12px', fontFamily: 'monospace', color: '#ff8888',
-    }).setScrollFactor(sf).setDepth(22);
-
-    this.add.text(14, 94, '! Heavy guards — deal high damage', {
-      fontSize: '9px', fontFamily: 'monospace', color: '#886644',
-    }).setScrollFactor(sf).setDepth(22);
-
-    this._stateTxt = this.add.text(790, 62, '', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#1a2d3a',
-    }).setOrigin(1, 0).setScrollFactor(sf).setDepth(22);
+    this._hud = new HUD(this);
 
     this._noticeTxt = this.add.text(400, 88, '', {
       fontSize: '16px', fontFamily: 'monospace', color: '#aaddff',
       stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(22).setAlpha(0);
   }
 
   // ─── Level clear ──────────────────────────────────────────────────────────
@@ -274,12 +257,6 @@ export default class Level4Scene extends Phaser.Scene {
     alive.forEach(e => e.update(this.player, delta));
     this.enemies = alive;
 
-    this._scoreTxt.setText(`Score: ${this.score}`);
-    const liveCount = this.enemies.filter(e => !e.isDead).length;
-    this._enemyTxt
-      .setText(liveCount > 0 ? `Guards: ${liveCount}` : 'All clear!')
-      .setColor(liveCount > 0 ? '#ff8888' : '#aaddff');
-    this._stateTxt.setText(this.player.state ?? '');
   }
 
   _endGame(win) {

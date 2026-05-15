@@ -233,13 +233,9 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── HUD ──────────────────────────────────────────────────────────────────
 
   _buildHUD() {
-    this._hud = new HUD(this, 'LEVEL 5 — FINAL BOSS');
+    this._hud = new HUD(this);
 
     const sf = 0;
-    this._scoreTxt = this.add.text(14, 62, 'Score: 0', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#ffff55',
-    }).setScrollFactor(sf).setDepth(22);
-
     // Phase notification (centred, fades in/out on phase change)
     this._phaseNotice = this.add.text(400, 88, '', {
       fontSize: '17px', fontFamily: 'monospace', color: '#ff5500',
@@ -288,8 +284,6 @@ export default class Level5Scene extends Phaser.Scene {
     this._hud.update(this.player);
     this._boss.update(this.player, delta);
 
-    this._scoreTxt.setText(`Score: ${this.score}`);
-    this._stateTxt.setText(this.player.state ?? '');
   }
 
   // ─── Victory screen (inline overlay — no scene transition on win) ──────────

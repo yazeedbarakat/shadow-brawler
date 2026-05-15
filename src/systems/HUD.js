@@ -66,67 +66,80 @@ export default class HUD {
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
-  _build(levelName) {
-    const sf = 0;  // scrollFactor 0 = fixed to camera
-    const D  = 20; // base depth for HUD layer
+  _build(_levelName) {
+    const sf = 0;
+    const D  = 20;
 
-    // ── Background panel (semi-transparent dark strip) ──────────────────────
-    this._scene.add.rectangle(400, 28, 800, 56, 0x000000, 0.60)
-      .setScrollFactor(sf).setDepth(D - 2);
+    // ── Pixel-art skull icon ─────────────────────────────────────────────────
+    const BONE = 0xbdb0a0;
+    const VOID = 0x050505;
+    const sx = 16, sy = 21;
+    // Cranium
+    this._scene.add.rectangle(sx,     sy - 8, 10, 4,  BONE).setScrollFactor(sf).setDepth(D + 2);
+    this._scene.add.rectangle(sx,     sy - 4, 14, 8,  BONE).setScrollFactor(sf).setDepth(D + 2);
+    // Eye sockets
+    this._scene.add.rectangle(sx - 4, sy - 3, 4, 5, VOID).setScrollFactor(sf).setDepth(D + 3);
+    this._scene.add.rectangle(sx + 4, sy - 3, 4, 5, VOID).setScrollFactor(sf).setDepth(D + 3);
+    // Nose
+    this._scene.add.rectangle(sx,     sy + 1, 2, 3, VOID, 0.7).setScrollFactor(sf).setDepth(D + 3);
+    // Jaw
+    this._scene.add.rectangle(sx,     sy + 5, 12, 5, BONE).setScrollFactor(sf).setDepth(D + 2);
+    // Teeth gaps
+    this._scene.add.rectangle(sx - 4, sy + 6, 2, 5, VOID).setScrollFactor(sf).setDepth(D + 3);
+    this._scene.add.rectangle(sx,     sy + 6, 2, 5, VOID).setScrollFactor(sf).setDepth(D + 3);
+    this._scene.add.rectangle(sx + 4, sy + 6, 2, 5, VOID).setScrollFactor(sf).setDepth(D + 3);
 
-    // ── Health bar (top-left, red) ──────────────────────────────────────────
-    this._scene.add.text(12, 8, 'HP', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#cc3333',
-    }).setScrollFactor(sf).setDepth(D + 3);
+    // ── Gothic vitality bar ──────────────────────────────────────────────────
+    const barX = 28, barY = 21;
 
-    // Background track
-    this._scene.add.rectangle(36, 19, HP_W + 4, 14, 0x3a0808)
-      .setScrollFactor(sf).setDepth(D).setOrigin(0, 0.5);
+    // Outer iron frame
+    this._scene.add.rectangle(barX + HP_W / 2 + 1, barY, HP_W + 10, 20, 0x0a0a0a)
+      .setScrollFactor(sf).setDepth(D).setOrigin(0.5, 0.5);
+    // Inner dark channel
+    this._scene.add.rectangle(barX + HP_W / 2 + 1, barY, HP_W + 2, 13, 0x1a0202)
+      .setScrollFactor(sf).setDepth(D + 1).setOrigin(0.5, 0.5);
 
-    // Red fill — left-anchored (origin 0, 0.5) so it shrinks from the right
-    this._hpFill = this._scene.add.rectangle(38, 19, HP_W, 10, 0xcc2222)
-      .setScrollFactor(sf).setDepth(D + 1).setOrigin(0, 0.5);
+    // Blood fill — left-anchored so it shrinks from the right
+    this._hpFill = this._scene.add.rectangle(barX + 2, barY, HP_W, 13, 0x8b0000)
+      .setScrollFactor(sf).setDepth(D + 2).setOrigin(0, 0.5);
 
-    // ── Armor durability row (gold, hidden until armored) ───────────────────
-    this._armorLabel = this._scene.add.text(12, 33, 'ARMOR', {
+    // Gloss shimmer on top of fill
+    this._hpShine = this._scene.add.rectangle(barX + 2, barY - 4, HP_W, 3, 0xff3333, 0.28)
+      .setScrollFactor(sf).setDepth(D + 3).setOrigin(0, 0.5);
+
+    // Ornamental divider ticks
+    for (let t = 1; t < 5; t++) {
+      this._scene.add.rectangle(barX + 2 + (HP_W / 5) * t, barY, 1, 13, 0x0a0a0a, 0.55)
+        .setScrollFactor(sf).setDepth(D + 4);
+    }
+
+    // ── Armor pips (hidden until equipped) ───────────────────────────────────
+    this._armorLabel = this._scene.add.text(barX, 37, 'ARMOR', {
       fontSize: '9px', fontFamily: 'monospace', color: '#997700',
     }).setScrollFactor(sf).setDepth(D + 3).setAlpha(0);
 
     this._pips = Array.from({ length: 5 }, (_, i) =>
-      this._scene.add.rectangle(55 + i * 19, 39, 15, 9, 0xffcc00)
+      this._scene.add.rectangle(barX + 36 + i * 19, 43, 15, 9, 0xffcc00)
         .setScrollFactor(sf).setDepth(D + 2).setAlpha(0),
     );
 
-    // ── Level name (top-center) ─────────────────────────────────────────────
-    this._scene.add.text(400, 7, levelName, {
-      fontSize: '13px', fontFamily: 'monospace',
-      color: '#8899aa',
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5, 0).setScrollFactor(sf).setDepth(D + 3);
-
-    // ── Weapon slot (top-right) ─────────────────────────────────────────────
+    // ── Weapon slot (top-right) ───────────────────────────────────────────────
     const slotX = 757, slotY = 27;
-
-    // Slot frame
     this._scene.add.rectangle(slotX, slotY, 70, 52, 0x080c14)
       .setScrollFactor(sf).setDepth(D);
     this._scene.add.rectangle(slotX, slotY, 66, 48, 0x0e1824)
       .setScrollFactor(sf).setDepth(D + 1);
-
-    // Empty-slot indicator (shown when no weapon equipped)
     this._emptySlot = this._scene.add.text(slotX, slotY - 4, '---', {
       fontSize: '14px', fontFamily: 'monospace', color: '#1a2a3a',
     }).setOrigin(0.5).setScrollFactor(sf).setDepth(D + 3);
-
-    // Slot label (weapon name / hint below the icon)
     this._slotLabel = this._scene.add.text(slotX, slotY + 17, 'Z:PUNCH\nX:KICK', {
       fontSize: '7px', fontFamily: 'monospace', color: '#2a4455', align: 'center',
     }).setOrigin(0.5, 0).setScrollFactor(sf).setDepth(D + 3);
 
     this._slotX = slotX;
-    this._slotY = slotY - 8; // icon center (above label)
+    this._slotY = slotY - 8;
 
-    // ── Combo counter (center-screen, hidden until 3+ hits) ────────────────
+    // ── Combo counter (center-screen, hidden until 3+ hits) ──────────────────
     this._comboTxt = this._scene.add.text(400, 185, '', {
       fontSize: '28px', fontFamily: 'monospace',
       color: '#ffffff',
@@ -259,10 +272,10 @@ export default class HUD {
 
   /** Call this every frame from the scene's update(). */
   update(player) {
-    // Health bar
     const hp = Math.max(0, player.health / player.maxHealth);
     this._hpFill.width     = HP_W * hp;
-    this._hpFill.fillColor = hp > 0.5 ? 0xcc2222 : hp > 0.25 ? 0xdd6600 : 0xff1111;
+    this._hpShine.width    = HP_W * hp;
+    this._hpFill.fillColor = hp > 0.5 ? 0x8b0000 : hp > 0.25 ? 0x993300 : 0xcc1100;
 
     // ── Smooth horizontal look-ahead ──────────────────────────────────────
     // Shift the camera center in the direction the player faces so they

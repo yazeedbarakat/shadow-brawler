@@ -222,31 +222,13 @@ export default class Level1Scene extends Phaser.Scene {
   // ─── HUD ──────────────────────────────────────────────────────────────────
 
   _buildHUD() {
-    // Shared HUD class handles: HP bar, weapon icon, level name, armor pips
-    this._hud = new HUD(this, 'LEVEL 1 — CITY STREETS');
+    this._hud = new HUD(this);
 
-    const sf = 0;
-
-    // Score (below HUD panel)
-    this._scoreTxt = this.add.text(14, 62, 'Score: 0', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#ffff55',
-    }).setScrollFactor(sf).setDepth(22);
-
-    // Enemy count
-    this._enemyTxt = this.add.text(14, 78, 'Enemies: 3', {
-      fontSize: '12px', fontFamily: 'monospace', color: '#ff6666',
-    }).setScrollFactor(sf).setDepth(22);
-
-    // Player state (debug, bottom-right of HUD panel)
-    this._stateTxt = this.add.text(790, 62, '', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#1a2d3a',
-    }).setOrigin(1, 0).setScrollFactor(sf).setDepth(22);
-
-    // Exit-opened notice (centred, below HUD panel)
+    // Level-clear notice
     this._noticeTxt = this.add.text(400, 88, '', {
       fontSize: '16px', fontFamily: 'monospace', color: '#00ff88',
       stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(22).setAlpha(0);
   }
 
   // ─── Level clear ──────────────────────────────────────────────────────────
@@ -274,13 +256,6 @@ export default class Level1Scene extends Phaser.Scene {
     alive.forEach(e => e.update(this.player, delta));
     this.enemies = alive;
 
-    this._scoreTxt.setText(`Score: ${this.score}`);
-
-    const liveCount = this.enemies.filter(e => !e.isDead).length;
-    this._enemyTxt
-      .setText(liveCount > 0 ? `Enemies: ${liveCount}` : 'All clear!')
-      .setColor(liveCount > 0 ? '#ff6666' : '#44ff88');
-    this._stateTxt.setText(this.player.state ?? '');
   }
 
   // ─── End states ───────────────────────────────────────────────────────────
