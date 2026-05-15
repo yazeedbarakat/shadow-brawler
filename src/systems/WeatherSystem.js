@@ -134,39 +134,60 @@ function _snow(scene, W, H) {
 // Brown/green leaves spiral and tumble down with a breeze.
 
 function _leaves(scene, W, H) {
-  mkTex(scene, 'wx_leaf', 6, 4, g => {
-    g.fillStyle(0x4a6620, 0.9);
+  // Crimson / scarlet autumn leaves — sized and coloured for a red-forest biome
+  mkTex(scene, 'wx_leaf', 7, 5, g => {
+    g.fillStyle(0xcc1a1a, 0.92);   // deep crimson
+    g.fillEllipse(3.5, 2.5, 7, 5);
+  });
+  mkTex(scene, 'wx_leaf2', 6, 4, g => {
+    g.fillStyle(0xff5500, 0.88);   // burnt orange accent
     g.fillEllipse(3, 2, 6, 4);
   });
-  mkTex(scene, 'wx_leaf2', 5, 3, g => {
-    g.fillStyle(0x7a4a18, 0.85);
+  mkTex(scene, 'wx_leaf3', 5, 3, g => {
+    g.fillStyle(0x8b0000, 0.80);   // dark blood-red smaller leaf
     g.fillEllipse(2.5, 1.5, 5, 3);
   });
 
+  // Main crimson fall — drifts across screen with gentle tumble
   scene.add.particles(0, -10, 'wx_leaf', {
-    x:        { min: -30, max: W + 30 },
-    lifespan: { min: 5000, max: 8000 },
-    speedX:   { min: 15, max: 55 },
-    speedY:   { min: 25, max: 60 },
+    x:        { min: -40, max: W + 40 },
+    lifespan: { min: 5000, max: 9000 },
+    speedX:   { min: 20, max: 65 },
+    speedY:   { min: 28, max: 70 },
     rotate:   { start: 0, end: 360 },
-    scale:    { min: 0.7, max: 1.3 },
-    alpha:    { start: 0.85, end: 0 },
-    quantity: 1,
-    frequency: 90,
+    scale:    { min: 0.8, max: 1.5 },
+    alpha:    { start: 0.90, end: 0 },
+    quantity: 2,
+    frequency: 70,
     depth:    18,
   }).setScrollFactor(0);
 
+  // Orange accent leaves — slower, bigger
   scene.add.particles(0, -10, 'wx_leaf2', {
     x:        { min: -20, max: W + 20 },
-    lifespan: { min: 6000, max: 10000 },
-    speedX:   { min: 10, max: 40 },
-    speedY:   { min: 20, max: 50 },
+    lifespan: { min: 6000, max: 11000 },
+    speedX:   { min: 8, max: 40 },
+    speedY:   { min: 18, max: 50 },
     rotate:   { start: 180, end: 540 },
-    scale:    { min: 0.5, max: 1.1 },
-    alpha:    { start: 0.70, end: 0 },
+    scale:    { min: 0.6, max: 1.3 },
+    alpha:    { start: 0.75, end: 0 },
     quantity: 1,
-    frequency: 130,
+    frequency: 100,
     depth:    17,
+  }).setScrollFactor(0);
+
+  // Dark small leaves — dense spray near ground
+  scene.add.particles(0, H * 0.5, 'wx_leaf3', {
+    x:        { min: -10, max: W + 10 },
+    lifespan: { min: 3000, max: 6000 },
+    speedX:   { min: 30, max: 80 },
+    speedY:   { min: -10, max: 20 },
+    rotate:   { start: 0, end: 720 },
+    scale:    { min: 0.5, max: 1.0 },
+    alpha:    { start: 0.65, end: 0 },
+    quantity: 1,
+    frequency: 150,
+    depth:    16,
   }).setScrollFactor(0);
 }
 

@@ -21,7 +21,7 @@ export default class Level1Scene extends Phaser.Scene {
       'player', 'player_walk', 'player_jump', 'player_hit',
       'player_punch', 'player_sword', 'player_kick',
       'enemy', 'pickup_sword', 'proj_star',
-      'bg_city', 'plat_city',
+      'bg_level1', 'bg_level1_anim', 'bg_city', 'plat_city',
     ]);
   }
 
@@ -37,102 +37,93 @@ export default class Level1Scene extends Phaser.Scene {
     this._createEnemies();
     this._setupSystems();
     this._buildHUD();
-    addWeather(this, 'rain');
+    addWeather(this, 'leaves');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
     this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
     this.cameras.main.setDeadzone(80, 60);
   }
 
-  // ─── Background: night city ───────────────────────────────────────────────
+  // ─── Background: animated red autumn ruins ────────────────────────────────
 
   _buildBackground() {
-    if (assetLoaded(this, 'bg_city')) {
-      this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_city').setDisplaySize(WORLD_W, WORLD_H);
+    const hasBase = assetLoaded(this, 'bg_level1');
+    const hasAnim = assetLoaded(this, 'bg_level1_anim');
+
+    if (!hasBase) {
+      // Procedural fallback: warm dusk sky
+      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.4, WORLD_W, WORLD_H * 0.8, 0x3a0a0a);
+      this.add.rectangle(WORLD_W / 2, WORLD_H * 0.85, WORLD_W, WORLD_H * 0.3, 0x1a0505);
       return;
     }
-    // Sky gradient feel — two rectangles
-    this.add.rectangle(WORLD_W / 2, WORLD_H * 0.3, WORLD_W, WORLD_H * 0.6, 0x060c18);
-    this.add.rectangle(WORLD_W / 2, WORLD_H * 0.8, WORLD_W, WORLD_H * 0.4, 0x0a0e1c);
 
-    // Moon
-    this.add.rectangle(1530, 40, 40, 40, 0xffffe8);
-    this.add.rectangle(1541, 37, 18, 22, 0x060c18); // crescent shadow bite
+    // ── Static base layer ──────────────────────────────────────────────────
+    this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1')
+      .setDisplaySize(WORLD_W, WORLD_H)
+      .setDepth(0);
 
-    // Stars — deterministic positions so they don't flicker on restart
-    for (let i = 0; i < 80; i++) {
-      const sx = (i * 313 + 40)  % WORLD_W;
-      const sy = 6 + (i * 97)    % 95;
-      const br = 0.3 + (i % 7) * 0.1;
-      this.add.rectangle(sx, sy, i % 5 === 0 ? 2 : 1, i % 5 === 0 ? 2 : 1, 0xffffff, br);
-    }
+    if (!hasAnim) return;
 
-    // Buildings
-    this._buildBuildings();
+    // ── Animated overlay: cross-fade through 9 frames ─────────────────────
+    // Two sprites swap roles so one can fade in while the other fades out.
+    // Both are set to the same display size and centred on the world.
+    const TOTAL_FRAMES = 9;
+    const HOLD_MS      = 900;   // time each frame is fully visible
+    const FADE_MS      = 350;   // cross-fade duration
 
-    // Street surface (asphalt)
-    this.add.rectangle(WORLD_W / 2, WORLD_H - 4,  WORLD_W, 18, 0x1a1a26);
-    // Kerb / pavement edge
-    this.add.rectangle(WORLD_W / 2, WORLD_H - 20, WORLD_W,  4, 0x3a3a50);
-    // Centre line (road markings, dashed)
-    for (let mx = 50; mx < WORLD_W; mx += 120) {
-      this.add.rectangle(mx, WORLD_H - 8, 60, 3, 0x555566, 0.4);
-    }
+    this._bgA = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
+      .setDisplaySize(WORLD_W, WORLD_H).setDepth(1).setAlpha(0.72);
 
-    // Street lamps
-    [170, 430, 700, 960, 1220, 1490].forEach(lx => {
-      this.add.rectangle(lx, WORLD_H - 48, 4, 56, 0x2a2a3a);          // pole
-      this.add.rectangle(lx + 14, WORLD_H - 74, 32, 4, 0x2a2a3a);     // arm
-      this.add.rectangle(lx + 28, WORLD_H - 78, 16, 9, 0xffffaa, 0.9); // bulb
-      this.add.rectangle(lx + 28, WORLD_H - 76, 36, 22, 0xffffaa, 0.06); // glow
+    this._bgB = this.add.image(WORLD_W / 2, WORLD_H / 2, 'bg_level1_anim', 0)
+      .setDisplaySize(WORLD_W, WORLD_H).setDepth(2).setAlpha(0);
+
+    this._bgFrame   = 0;
+    this._bgFlipper = true; // true = bgA is foreground, bgB is next incoming
+
+    const advanceFrame = () => {
+      this._bgFrame = (this._bgFrame + 1) % TOTAL_FRAMES;
+
+      const front = this._bgFlipper ? this._bgA : this._bgB;
+      const back  = this._bgFlipper ? this._bgB : this._bgA;
+
+      back.setFrame(this._bgFrame).setAlpha(0).setDepth(2);
+      front.setDepth(1);
+
+      // Fade the new frame in; fade the old one out simultaneously
+      this.tweens.add({
+        targets:  back,
+        alpha:    0.72,
+        duration: FADE_MS,
+        ease:     'Sine.easeInOut',
+      });
+      this.tweens.add({
+        targets:  front,
+        alpha:    0,
+        duration: FADE_MS,
+        ease:     'Sine.easeInOut',
+      });
+
+      this._bgFlipper = !this._bgFlipper;
+    };
+
+    // Fire on a timer so it keeps looping independently of the game loop
+    this._bgTimer = this.time.addEvent({
+      delay:    HOLD_MS + FADE_MS,
+      callback: advanceFrame,
+      loop:     true,
     });
-  }
 
-  _buildBuildings() {
-    // [centerX, width, height, bodyColor]
-    const BLDGS = [
-      [75,   86, 210, 0x0d1b2e],
-      [192,  66, 158, 0x0b1826],
-      [296, 102, 270, 0x0e1c30],
-      [420,  74, 185, 0x0f1e2e],
-      [524,  62, 135, 0x0d1b28],
-      [626, 102, 285, 0x09152a],
-      [748,  78, 195, 0x0f1d30],
-      [866, 110, 235, 0x0c1b2c],
-      [990,  68, 160, 0x0e1f32],
-      [1096, 92, 220, 0x0f1c2c],
-      [1212, 74, 178, 0x0b192a],
-      [1336,106, 248, 0x0e1d2e],
-      [1464, 80, 192, 0x0d1c2e],
-      [1568, 66, 148, 0x0e1f30],
-    ];
+    // Subtle ambient light pulse — warm orange glow that breathes
+    this._ambientRect = this.add.rectangle(WORLD_W / 2, WORLD_H / 2, WORLD_W, WORLD_H, 0xff4400)
+      .setAlpha(0).setDepth(3).setBlendMode(Phaser.BlendModes.ADD);
 
-    BLDGS.forEach(([cx, bw, bh, color]) => {
-      const by = GROUND_TOP - bh / 2; // bottom aligns with street
-
-      // Body
-      this.add.rectangle(cx, by, bw, bh, color);
-      // Roof ledge
-      this.add.rectangle(cx, by - bh / 2 + 4, bw + 4, 7, 0x182230);
-      // Antenna / water tower accent on some buildings
-      if (bh > 200) {
-        this.add.rectangle(cx + bw * 0.3, by - bh / 2 - 12, 4, 22, 0x1a2438);
-        this.add.rectangle(cx - bw * 0.2, by - bh / 2 - 8,  4, 14, 0x1a2438);
-      }
-
-      // Windows — grid with pseudo-random lit/dark states
-      const cols = Math.max(1, Math.floor((bw - 10) / 16));
-      const rows = Math.max(1, Math.floor((bh - 22) / 20));
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const wx = cx - ((cols - 1) * 8) + c * 16;
-          const wy = by - bh / 2 + 16 + r * 20;
-          // Hash mixing for varied but stable lit/dark pattern
-          const hash = (cx * 7 + r * 11 + c * 17) % 10;
-          const lit  = hash > 3; // ~60% lit
-          this.add.rectangle(wx, wy, 9, 11, lit ? 0xffdd88 : 0x141e2a, lit ? 0.88 : 0.7);
-        }
-      }
+    this.tweens.add({
+      targets:  this._ambientRect,
+      alpha:    { from: 0, to: 0.04 },
+      duration: 2200,
+      yoyo:     true,
+      repeat:   -1,
+      ease:     'Sine.easeInOut',
     });
   }
 
