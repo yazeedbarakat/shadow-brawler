@@ -25,15 +25,13 @@ export default class Level2Scene extends Phaser.Scene {
   }
 
   create() {
-    this.score     = 0;
-    this._done     = false;
-    this._doorOpen = false;
+    this.score = 0;
+    this._done = false;
 
     this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
 
     this._buildBackground();
     this._platforms = this._buildPlatforms();
-    this._buildExit();
     this._createPlayer();
     this._createEnemies();
     this._setupSystems();
@@ -158,40 +156,6 @@ export default class Level2Scene extends Phaser.Scene {
 
   // ─── Exit door ────────────────────────────────────────────────────────────
 
-  _buildExit() {
-    const dx = WORLD_W - 44;
-    const dh = 100;
-    const dy = GROUND_TOP - dh / 2;
-
-    // Stone archway frame
-    this.add.rectangle(dx, dy, 64, dh + 16, 0x2e1c08).setDepth(2);
-    this.add.rectangle(dx, dy, 58, dh + 10, 0x3e2810).setDepth(2);
-
-    // Door body
-    this._door = this.add.rectangle(dx, dy, 44, dh, 0x3a1a04).setDepth(3);
-    // Iron bar details on locked door
-    [-14, 0, 14].forEach(bx => {
-      this.add.rectangle(dx + bx, dy, 4, dh - 8, 0x2a1204, 0.8).setDepth(4);
-    });
-    this.add.rectangle(dx, dy - 10, 44, 4, 0x2a1204, 0.8).setDepth(4);
-    this.add.rectangle(dx, dy + 10, 44, 4, 0x2a1204, 0.8).setDepth(4);
-
-    // Lock indicator
-    this._lockGem = this.add.rectangle(dx, dy, 10, 10, 0xaa2222).setDepth(5);
-
-    this._doorTxt = this.add.text(dx, dy - dh / 2 - 14, 'SEALED', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#882222',
-    }).setOrigin(0.5).setDepth(5);
-
-    this._arrow = this.add.text(dx - 36, dy, '>>', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#ffcc44',
-    }).setOrigin(0.5).setDepth(5).setAlpha(0);
-
-    this._doorZone = this.add.rectangle(dx, dy, 66, dh + 14, 0x000000, 0);
-    this.physics.add.existing(this._doorZone, true);
-    this._dx = dx; this._dy = dy;
-  }
-
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
@@ -244,11 +208,6 @@ export default class Level2Scene extends Phaser.Scene {
     });
 
 
-    this.physics.add.overlap(
-      this.player.sprite,
-      this._doorZone,
-      () => { if (this._doorOpen && !this._done) this._enterExit(); },
-    );
   }
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
@@ -275,39 +234,14 @@ export default class Level2Scene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
   }
 
-  // ─── Door unlock ──────────────────────────────────────────────────────────
+  // ─── Level clear ──────────────────────────────────────────────────────────
 
   _checkDoorUnlock() {
-    if (!this._doorOpen && this.enemies.every(e => e.isDead)) this._openDoor();
-  }
-
-  _openDoor() {
-    this._doorOpen = true;
-
-    this._door.setFillStyle(0x664422);  // warmer open door
-    this._lockGem.setFillStyle(0xffcc44);
-    this._doorTxt.setText('EXIT').setColor('#ffcc44');
-
-    this.tweens.add({
-      targets: this._door, alpha: 0.7, yoyo: true, repeat: -1,
-      duration: 580, ease: 'Sine.easeInOut',
-    });
-    this._arrow.setAlpha(1);
-    this.tweens.add({
-      targets: this._arrow, x: this._dx - 20,
-      yoyo: true, repeat: -1, duration: 390, ease: 'Sine.easeInOut',
-    });
-
-    this._noticeTxt.setText('TEMPLE CLEARED   PASSAGE OPEN  >>').setAlpha(1);
-    this.tweens.add({
-      targets: this._noticeTxt, alpha: 0, duration: 2200, delay: 1200, ease: 'Power2',
-    });
-  }
-
-  _enterExit() {
+    if (this._done || !this.enemies.every(e => e.isDead)) return;
     this._done = true;
-    this.cameras.main.flash(380, 255, 240, 200);
-    this.time.delayedCall(420, () => {
+    this._noticeTxt.setText('LEVEL CLEAR!').setAlpha(1);
+    this.cameras.main.flash(500, 255, 240, 200);
+    this.time.delayedCall(1400, () => {
       this.scene.start('Level3Scene', { score: this.score });
     });
   }

@@ -26,15 +26,13 @@ export default class Level4Scene extends Phaser.Scene {
   }
 
   create() {
-    this.score     = 0;
-    this._done     = false;
-    this._doorOpen = false;
+    this.score = 0;
+    this._done = false;
 
     this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
 
     this._buildBackground();
     this._platforms = this._buildPlatforms();
-    this._buildExit();
     this._createPlayer();
     this._armorSystem = new ArmorSystem(this, this.player);
     this._createEnemies();
@@ -163,38 +161,6 @@ export default class Level4Scene extends Phaser.Scene {
 
   // ─── Exit door ────────────────────────────────────────────────────────────
 
-  _buildExit() {
-    const dx = WORLD_W - 44;
-    const dh = 100;
-    const dy = GROUND_TOP - dh / 2;
-
-    // Portcullis frame
-    this.add.rectangle(dx, dy, 64, dh + 16, 0x0e0e1c).setDepth(2);
-    this.add.rectangle(dx, dy, 58, dh + 10, 0x1c1c2e).setDepth(2);
-
-    // Portcullis bars (locked)
-    this._portcullis = this.add.rectangle(dx, dy, 46, dh, 0x101018).setDepth(3);
-    for (let gy = dy - dh / 2 + 8; gy < dy + dh / 2; gy += 14) {
-      this.add.rectangle(dx, gy, 46, 2, 0x2a2a40, 0.9).setDepth(4);
-    }
-    [-14, 0, 14].forEach(bx => {
-      this.add.rectangle(dx + bx, dy, 4, dh - 4, 0x2a2a40, 0.9).setDepth(4);
-    });
-
-    this._lockLight = this.add.rectangle(dx, dy, 10, 10, 0xaa2222).setDepth(5);
-    this._doorTxt = this.add.text(dx, dy - dh / 2 - 14, 'BARRED', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#882222',
-    }).setOrigin(0.5).setDepth(5);
-
-    this._arrow = this.add.text(dx - 36, dy, '>>', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#aaddff',
-    }).setOrigin(0.5).setDepth(5).setAlpha(0);
-
-    this._doorZone = this.add.rectangle(dx, dy, 66, dh + 14, 0x000000, 0);
-    this.physics.add.existing(this._doorZone, true);
-    this._dx = dx; this._dy = dy;
-  }
-
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
@@ -251,11 +217,6 @@ export default class Level4Scene extends Phaser.Scene {
     });
 
 
-    this.physics.add.overlap(
-      this.player.sprite,
-      this._doorZone,
-      () => { if (this._doorOpen && !this._done) this._enterExit(); },
-    );
   }
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
@@ -286,38 +247,14 @@ export default class Level4Scene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
   }
 
-  // ─── Door unlock ──────────────────────────────────────────────────────────
+  // ─── Level clear ──────────────────────────────────────────────────────────
 
   _checkDoorUnlock() {
-    if (!this._doorOpen && this.enemies.every(e => e.isDead)) this._openDoor();
-  }
-
-  _openDoor() {
-    this._doorOpen = true;
-    this._portcullis.setFillStyle(0x1c2c3c);
-    this._lockLight.setFillStyle(0x44aaff);
-    this._doorTxt.setText('EXIT').setColor('#aaddff');
-
-    this.tweens.add({
-      targets: this._portcullis, alpha: 0.5,
-      yoyo: true, repeat: -1, duration: 560, ease: 'Sine.easeInOut',
-    });
-    this._arrow.setAlpha(1);
-    this.tweens.add({
-      targets: this._arrow, x: this._dx - 20,
-      yoyo: true, repeat: -1, duration: 390, ease: 'Sine.easeInOut',
-    });
-
-    this._noticeTxt.setText('FORTRESS CLEARED   GATE OPEN  >>').setAlpha(1);
-    this.tweens.add({
-      targets: this._noticeTxt, alpha: 0, duration: 2200, delay: 1200, ease: 'Power2',
-    });
-  }
-
-  _enterExit() {
+    if (this._done || !this.enemies.every(e => e.isDead)) return;
     this._done = true;
-    this.cameras.main.flash(380, 200, 220, 255);
-    this.time.delayedCall(420, () => {
+    this._noticeTxt.setText('LEVEL CLEAR!').setAlpha(1);
+    this.cameras.main.flash(500, 200, 220, 255);
+    this.time.delayedCall(1400, () => {
       this.scene.start('Level5Scene', { score: this.score });
     });
   }

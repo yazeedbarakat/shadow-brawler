@@ -25,15 +25,13 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   create() {
-    this.score     = 0;
-    this._done     = false;
-    this._doorOpen = false;
+    this.score = 0;
+    this._done = false;
 
     this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
 
     this._buildBackground();
     this._platforms = this._buildPlatforms();
-    this._buildExit();
     this._createPlayer();
     this._createEnemies();
     this._setupSystems();
@@ -167,44 +165,6 @@ export default class Level1Scene extends Phaser.Scene {
     });
   }
 
-  // ─── Exit door ────────────────────────────────────────────────────────────
-
-  _buildExit() {
-    const dx = WORLD_W - 46;
-    const dh = 100;
-    const dy = GROUND_TOP - dh / 2; // sits on ground
-
-    // Surrounding wall / door frame
-    this.add.rectangle(dx, dy, 60, dh + 12, 0x1a1a2c).setDepth(2);
-    // Frame border detail
-    this.add.rectangle(dx, dy, 56, dh + 8, 0x2a2a40).setDepth(2);
-
-    // Door body (changes colour when unlocked)
-    this._door = this.add.rectangle(dx, dy, 44, dh, 0x441111).setDepth(3);
-
-    // Padlock icon (two rects)
-    this._padlockBody = this.add.rectangle(dx, dy + 8, 12, 10, 0x882222).setDepth(4);
-    this._padlockArch = this.add.rectangle(dx, dy,     10,  8, 0x882222).setDepth(4);
-
-    // Status text above door
-    this._doorTxt = this.add.text(dx, dy - dh / 2 - 14, 'LOCKED', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#ff4444',
-    }).setOrigin(0.5).setDepth(4);
-
-    // Animated arrow (hidden until door opens)
-    this._arrow = this.add.text(dx - 36, dy, '>>', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#00ff88',
-    }).setOrigin(0.5).setDepth(4).setAlpha(0);
-
-    // Invisible trigger zone for the player to walk into
-    this._doorZone = this.add.rectangle(dx, dy, 64, dh + 12, 0x000000, 0);
-    this.physics.add.existing(this._doorZone, true);
-
-    // Store for _openDoor / _enterExit
-    this._dx = dx;
-    this._dy = dy;
-  }
-
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
@@ -256,12 +216,6 @@ export default class Level1Scene extends Phaser.Scene {
     });
 
 
-    // Walk-into-door triggers level transition (only when door is open)
-    this.physics.add.overlap(
-      this.player.sprite,
-      this._doorZone,
-      () => { if (this._doorOpen && !this._done) this._enterExit(); },
-    );
   }
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
@@ -294,48 +248,14 @@ export default class Level1Scene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
   }
 
-  // ─── Door unlock ──────────────────────────────────────────────────────────
+  // ─── Level clear ──────────────────────────────────────────────────────────
 
   _checkDoorUnlock() {
-    // isDead is set immediately on kill — sprite may still be fading
-    const stillAlive = this.enemies.filter(e => !e.isDead);
-    if (stillAlive.length === 0 && !this._doorOpen) this._openDoor();
-  }
-
-  _openDoor() {
-    this._doorOpen = true;
-
-    // Door turns green
-    this._door.setFillStyle(0x22aa55);
-    this._padlockBody.setFillStyle(0x44ff88);
-    this._padlockArch.setFillStyle(0x44ff88);
-    this._doorTxt.setText('EXIT').setColor('#44ff88');
-
-    // Pulsing glow on the door
-    this.tweens.add({
-      targets: this._door,
-      alpha: 0.65, yoyo: true, repeat: -1, duration: 550, ease: 'Sine.easeInOut',
-    });
-
-    // Arrow animation
-    this._arrow.setAlpha(1);
-    this.tweens.add({
-      targets: this._arrow,
-      x: this._dx - 22,
-      yoyo: true, repeat: -1, duration: 380, ease: 'Sine.easeInOut',
-    });
-
-    // HUD notice
-    this._noticeTxt.setText('ALL ENEMIES DEFEATED   EXIT OPENED  >>').setAlpha(1);
-    this.tweens.add({
-      targets: this._noticeTxt, alpha: 0, duration: 2200, delay: 1200, ease: 'Power2',
-    });
-  }
-
-  _enterExit() {
+    if (this._done || !this.enemies.every(e => e.isDead)) return;
     this._done = true;
-    this.cameras.main.flash(380, 255, 255, 255);
-    this.time.delayedCall(400, () => {
+    this._noticeTxt.setText('LEVEL CLEAR!').setAlpha(1);
+    this.cameras.main.flash(500, 255, 255, 255);
+    this.time.delayedCall(1400, () => {
       this.scene.start('Level2Scene', { score: this.score });
     });
   }

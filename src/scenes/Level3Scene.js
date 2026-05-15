@@ -26,15 +26,13 @@ export default class Level3Scene extends Phaser.Scene {
   }
 
   create() {
-    this.score     = 0;
-    this._done     = false;
-    this._doorOpen = false;
+    this.score = 0;
+    this._done = false;
 
     this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
 
     this._buildBackground();
     this._platforms = this._buildPlatforms();
-    this._buildExit();
     this._createPlayer();
     this._createEnemies();
     this._setupSystems();
@@ -156,39 +154,6 @@ export default class Level3Scene extends Phaser.Scene {
 
   // ─── Exit door ────────────────────────────────────────────────────────────
 
-  _buildExit() {
-    const dx = WORLD_W - 44;
-    const dh = 100;
-    const dy = GROUND_TOP - dh / 2;
-
-    // Tree-trunk framing (natural arch)
-    this.add.rectangle(dx - 32, dy, 14, dh + 20, 0x0c2008).setDepth(2);
-    this.add.rectangle(dx + 32, dy, 14, dh + 20, 0x0c2008).setDepth(2);
-    this.add.rectangle(dx, dy - dh / 2 - 6, 80, 14,  0x0c2008).setDepth(2);
-
-    // Door body (dark undergrowth / vines blocking path)
-    this._door = this.add.rectangle(dx, dy, 50, dh, 0x040c04).setDepth(3);
-
-    // Vine texture on locked door
-    [-10, 10].forEach(ox => {
-      this.add.rectangle(dx + ox, dy, 4, dh - 8, 0x0e1e0c, 0.9).setDepth(4);
-    });
-
-    this._lockGem = this.add.rectangle(dx, dy, 10, 10, 0x33aa22).setDepth(5);
-
-    this._doorTxt = this.add.text(dx, dy - dh / 2 - 14, 'OVERGROWN', {
-      fontSize: '9px', fontFamily: 'monospace', color: '#226622',
-    }).setOrigin(0.5).setDepth(5);
-
-    this._arrow = this.add.text(dx - 38, dy, '>>', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#44ff88',
-    }).setOrigin(0.5).setDepth(5).setAlpha(0);
-
-    this._doorZone = this.add.rectangle(dx, dy, 70, dh + 14, 0x000000, 0);
-    this.physics.add.existing(this._doorZone, true);
-    this._dx = dx; this._dy = dy;
-  }
-
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
@@ -265,11 +230,6 @@ export default class Level3Scene extends Phaser.Scene {
     });
 
 
-    this.physics.add.overlap(
-      this.player.sprite,
-      this._doorZone,
-      () => { if (this._doorOpen && !this._done) this._enterExit(); },
-    );
   }
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
@@ -301,39 +261,14 @@ export default class Level3Scene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(sf).setDepth(22).setAlpha(0);
   }
 
-  // ─── Door unlock ──────────────────────────────────────────────────────────
+  // ─── Level clear ──────────────────────────────────────────────────────────
 
   _checkDoorUnlock() {
-    if (!this._doorOpen && this.enemies.every(e => e.isDead)) this._openDoor();
-  }
-
-  _openDoor() {
-    this._doorOpen = true;
-
-    this._door.setFillStyle(0x0e2e0e);
-    this._lockGem.setFillStyle(0x44ff88);
-    this._doorTxt.setText('EXIT').setColor('#44ff88');
-
-    this.tweens.add({
-      targets: this._door, alpha: 0.55, yoyo: true, repeat: -1,
-      duration: 560, ease: 'Sine.easeInOut',
-    });
-    this._arrow.setAlpha(1);
-    this.tweens.add({
-      targets: this._arrow, x: this._dx - 20,
-      yoyo: true, repeat: -1, duration: 380, ease: 'Sine.easeInOut',
-    });
-
-    this._noticeTxt.setText('FOREST CLEARED   PATH OPEN  >>').setAlpha(1);
-    this.tweens.add({
-      targets: this._noticeTxt, alpha: 0, duration: 2200, delay: 1200, ease: 'Power2',
-    });
-  }
-
-  _enterExit() {
+    if (this._done || !this.enemies.every(e => e.isDead)) return;
     this._done = true;
-    this.cameras.main.flash(380, 200, 255, 200);
-    this.time.delayedCall(420, () => {
+    this._noticeTxt.setText('LEVEL CLEAR!').setAlpha(1);
+    this.cameras.main.flash(500, 200, 255, 200);
+    this.time.delayedCall(1400, () => {
       this.scene.start('Level4Scene', { score: this.score });
     });
   }
