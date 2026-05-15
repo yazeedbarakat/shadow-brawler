@@ -1,0 +1,89 @@
+══════════════════════════════════════════
+FIX — MAKE GAME FILL ENTIRE SCREEN
+══════════════════════════════════════════
+
+The game currently renders in a small centered box with black bars
+around it. Fix this so the game fills 100% of the browser window.
+
+Apply ALL of the following changes:
+
+── index.html ──
+Remove any fixed width/height attributes from <canvas> element.
+Make sure <body> and <html> have no margin, padding, or overflow.
+
+── style.css ──
+Replace all existing sizing rules with:
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas#gameCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* All screen overlays (menu, character select, etc.) */
+  .screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+  }
+
+── js/main.js or gameLoop.js ──
+Add a resize handler so canvas resolution matches window size:
+
+  function resizeCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas(); // call once on load
+
+Also update the ground Y, fighter positions, and HUD positions
+to use canvas.width and canvas.height as reference instead of
+hardcoded 1280×720 values. Example:
+
+  const GROUND_Y    = canvas.height * 0.78;
+  const P1_START_X  = canvas.width  * 0.25;
+  const P2_START_X  = canvas.width  * 0.75;
+  const BAR_WIDTH   = canvas.width  * 0.35;
+  const TIMER_X     = canvas.width  * 0.5;
+  const TIMER_Y     = canvas.height * 0.08;
+
+── Background images ──
+Draw stage backgrounds using:
+  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height)
+NOT fixed pixel values.
+
+── UI overlays ──
+All DOM screens must use:
+  width: 100vw; height: 100vh;
+and all button/text positions must use % or vh/vw units,
+NOT fixed px values.
