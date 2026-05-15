@@ -234,6 +234,7 @@ export default class Level5Scene extends Phaser.Scene {
 
   _buildHUD() {
     this._hud = new HUD(this);
+    this._hud.setBoss(this._boss, 'THE OVERLORD');
 
     const sf = 0;
     // Phase notification (centred, fades in/out on phase change)
@@ -281,7 +282,7 @@ export default class Level5Scene extends Phaser.Scene {
 
     this.player.update(time, delta);
     this.weaponSystem.update();
-    this._hud.update(this.player);
+    this._hud.update(this.player, this._boss);
     this._boss.update(this.player, delta);
 
   }

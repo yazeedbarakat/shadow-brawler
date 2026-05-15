@@ -183,6 +183,7 @@ export default class Level2Scene extends Phaser.Scene {
     const e = new Enemy(this, 550, 357, bossCfg);
     this.enemies.push(e);
     this.enemyGroup.add(e.sprite);
+    this._boss = e;
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }
@@ -209,6 +210,7 @@ export default class Level2Scene extends Phaser.Scene {
 
   _buildHUD() {
     this._hud = new HUD(this);
+    this._hud.setBoss(this._boss, 'TEMPLE GUARDIAN');
 
     this._noticeTxt = this.add.text(400, 88, '', {
       fontSize: '16px', fontFamily: 'monospace', color: '#ffcc44',
@@ -235,7 +237,7 @@ export default class Level2Scene extends Phaser.Scene {
 
     this.player.update(time, delta);
     this.weaponSystem.update();
-    this._hud.update(this.player);
+    this._hud.update(this.player, this._boss);
 
     const alive = this.enemies.filter(e => e.sprite.active);
     alive.forEach(e => e.update(this.player, delta));

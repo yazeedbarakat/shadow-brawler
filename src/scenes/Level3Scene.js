@@ -193,6 +193,7 @@ export default class Level3Scene extends Phaser.Scene {
     this.enemies.push(re);
     this._rangedEnemies.push(re);
     this.enemyGroup.add(re.sprite);
+    this._boss = re;
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }
@@ -227,6 +228,7 @@ export default class Level3Scene extends Phaser.Scene {
 
   _buildHUD() {
     this._hud = new HUD(this);
+    this._hud.setBoss(this._boss, 'SHADOW ARCHER');
 
     this._noticeTxt = this.add.text(400, 88, '', {
       fontSize: '16px', fontFamily: 'monospace', color: '#44ff88',
@@ -253,7 +255,7 @@ export default class Level3Scene extends Phaser.Scene {
 
     this.player.update(time, delta);
     this.weaponSystem.update();
-    this._hud.update(this.player);
+    this._hud.update(this.player, this._boss);
 
     // Enemy update — RangedEnemy.update() handles projectile firing automatically
     const alive = this.enemies.filter(e => e.sprite.active);

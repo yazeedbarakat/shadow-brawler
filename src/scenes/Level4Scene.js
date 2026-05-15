@@ -195,6 +195,7 @@ export default class Level4Scene extends Phaser.Scene {
     });
     this.enemies.push(e);
     this.enemyGroup.add(e.sprite);
+    this._boss = e;
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }
@@ -221,6 +222,7 @@ export default class Level4Scene extends Phaser.Scene {
 
   _buildHUD() {
     this._hud = new HUD(this);
+    this._hud.setBoss(this._boss, 'IRON COLOSSUS');
 
     this._noticeTxt = this.add.text(400, 88, '', {
       fontSize: '16px', fontFamily: 'monospace', color: '#aaddff',
@@ -248,7 +250,7 @@ export default class Level4Scene extends Phaser.Scene {
     this.player.update(time, delta);
     this.weaponSystem.update();
     this._armorSystem.update();
-    this._hud.update(this.player);
+    this._hud.update(this.player, this._boss);
 
     const alive = this.enemies.filter(e => e.sprite.active);
     alive.forEach(e => e.update(this.player, delta));
