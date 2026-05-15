@@ -90,7 +90,7 @@ export default class Level1Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 376);
+    this.player = new Player(this, 60, 346);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
