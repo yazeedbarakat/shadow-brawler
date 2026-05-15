@@ -276,19 +276,5 @@ export default class HUD {
     this._hpFill.width     = HP_W * hp;
     this._hpShine.width    = HP_W * hp;
     this._hpFill.fillColor = hp > 0.5 ? 0x8b0000 : hp > 0.25 ? 0x993300 : 0xcc1100;
-
-    // ── Smooth horizontal look-ahead ──────────────────────────────────────
-    // Shift the camera center in the direction the player faces so they
-    // can see more of what lies ahead.  Applied every frame with a lerp
-    // so the transition is gradual when the player turns around.
-    const cam       = this._scene.cameras.main;
-    const targetX   = player.facing * 80;  // +80 when facing right, -80 when left
-    const targetY   = -20;                  // slight upward offset — shows more platform above
-    const curX      = cam.followOffset?.x ?? 0;
-    const curY      = cam.followOffset?.y ?? targetY;
-    cam.setFollowOffset(
-      curX + (targetX - curX) * 0.06,
-      curY + (targetY - curY) * 0.04,
-    );
   }
 }
