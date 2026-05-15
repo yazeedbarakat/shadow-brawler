@@ -186,18 +186,15 @@ export default class Level4Scene extends Phaser.Scene {
       color: 0x3a3a5a, textureKey: 'enemy_heavy',
     };
 
-    // Spawn above platforms so gravity settles them
-    // P2 top=300, P3 top=244, P4 top=302, P6 top=300; enemy h=64 → center = top-32
-    [
-      { x: 200, y: 358 },
-      { x: 370, y: 358 },
-      { x: 540, y: 358 },
-      { x: 700, y: 358 },
-    ].forEach(({ x, y }) => {
-      const e = new Enemy(this, x, y, heavyCfg);
-      this.enemies.push(e);
-      this.enemyGroup.add(e.sprite);
+    // Single heavy boss — slow, armoured, devastating
+    const e = new Enemy(this, 550, 350, {
+      ...heavyCfg,
+      health: 500, speed: 40, chaseSpeed: 68,
+      contactDamage: 30, attackRate: 900,
+      detectionRange: 700, w: 56, h: 72,
     });
+    this.enemies.push(e);
+    this.enemyGroup.add(e.sprite);
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }

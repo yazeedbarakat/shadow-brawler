@@ -173,22 +173,16 @@ export default class Level2Scene extends Phaser.Scene {
 
     // Platform tops: P2 y=308−8=300, P3 y=252−8=244, P4 y=310−8=302, P6 y=308−8=300
     // Enemy center = top − 26 (half of 52px height)
-    const spawns = [
-      { x: 200, y: 364, cfg: { health: 80, speed: 78, chaseSpeed: 114,
-          detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 370, y: 364, cfg: { health: 80, speed: 76, chaseSpeed: 110,
-          detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 540, y: 364, cfg: { health: 80, speed: 80, chaseSpeed: 116,
-          detectionRange: 255, contactDamage: 12, color: 0xaa5522 } },
-      { x: 700, y: 364, cfg: { health: 80, speed: 82, chaseSpeed: 118,
-          detectionRange: 265, contactDamage: 12, color: 0xaa5522 } },
-    ];
+    const bossCfg = {
+      health: 300, speed: 72, chaseSpeed: 108,
+      detectionRange: 700, contactDamage: 16,
+      knockbackSpeed: 110, w: 46, h: 62,
+      color: 0xaa5522,
+    };
 
-    spawns.forEach(({ x, y, cfg }) => {
-      const e = new Enemy(this, x, y, cfg);
-      this.enemies.push(e);
-      this.enemyGroup.add(e.sprite);
-    });
+    const e = new Enemy(this, 550, 357, bossCfg);
+    this.enemies.push(e);
+    this.enemyGroup.add(e.sprite);
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }

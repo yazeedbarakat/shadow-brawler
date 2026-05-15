@@ -104,17 +104,16 @@ export default class Level1Scene extends Phaser.Scene {
     // Spawn above each target platform — gravity drops them onto the ledge
     // Target platform tops: P3 y=252−8=244, P4 y=328−8=320, P6 y=308−8=300
     // Enemy h=52 → center sits at platformTop − 26
-    const spawns = [
-      { x: 250, y: 364 },
-      { x: 450, y: 364 },
-      { x: 650, y: 364 },
-    ];
+    const bossCfg = {
+      health: 220, speed: 70, chaseSpeed: 105,
+      detectionRange: 700, contactDamage: 14,
+      knockbackSpeed: 120, w: 44, h: 60,
+      color: 0xcc2222,
+    };
 
-    spawns.forEach(({ x, y }) => {
-      const e = new Enemy(this, x, y);
-      this.enemies.push(e);
-      this.enemyGroup.add(e.sprite);
-    });
+    const e = new Enemy(this, 550, 358, bossCfg);
+    this.enemies.push(e);
+    this.enemyGroup.add(e.sprite);
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }

@@ -180,29 +180,19 @@ export default class Level3Scene extends Phaser.Scene {
                         shootRange: 290, minShootRange: 88,
                         shootRate: 2400, projDamage: 8 };
 
-    // Melee enemies — faster, rush the player
-    // Platform tops: P2 y=304−8=296, P4 y=308−8=300, P6 y=306−8=298
-    [
-      { x: 250, y: 364 },
-      { x: 470, y: 364 },
-      { x: 680, y: 364 },
-    ].forEach(({ x, y }) => {
-      const e = new Enemy(this, x, y, meleeCfg);
-      this.enemies.push(e);
-      this.enemyGroup.add(e.sprite);
-    });
+    // Single ranged boss — keeps distance and pelts the player
+    const bossCfg = { ...rangedCfg,
+      health: 350, speed: 80, chaseSpeed: 115,
+      detectionRange: 700, contactDamage: 14,
+      knockbackSpeed: 100, w: 44, h: 60,
+      shootRange: 600, minShootRange: 80,
+      shootRate: 1600, projDamage: 12,
+    };
 
-    // Ranged enemies — stop and shoot glowing projectiles
-    // Platform tops: P3 y=248−8=240, P5 y=252−8=244
-    [
-      { x: 360, y: 364 },
-      { x: 580, y: 364 },
-    ].forEach(({ x, y }) => {
-      const re = new RangedEnemy(this, x, y, rangedCfg);
-      this.enemies.push(re);
-      this._rangedEnemies.push(re);
-      this.enemyGroup.add(re.sprite);
-    });
+    const re = new RangedEnemy(this, 560, 358, bossCfg);
+    this.enemies.push(re);
+    this._rangedEnemies.push(re);
+    this.enemyGroup.add(re.sprite);
 
     this.physics.add.collider(this.enemyGroup, this._platforms);
   }
