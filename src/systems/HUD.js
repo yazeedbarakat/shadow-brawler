@@ -227,114 +227,60 @@ export default class HUD {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  PLAYER BAR (top-left)
+  //  PLAYER BAR (top-left) — image-based health bar
   // ══════════════════════════════════════════════════════════════════════════
   _buildPlayerBar() {
     const sc = this._scene;
 
-    // ── Layout ──────────────────────────────────────────────────────────────
-    const PX = 4, PY = 4;          // panel top-left
-    const PW = 302, PH = 48;       // panel size
-    const EMB_X = 30, EMB_Y = 28;  // portrait centre
-    const BAR_X = 56, BAR_Y = 10;  // bar fill origin
-    const BAR_H = 20;
+    // ── Image frame layout ───────────────────────────────────────────────────
+    // The PNG (165×49) is displayed at 300×48 — skull + ornaments always on top
+    const HB_X      = 4;    // image top-left X on screen
+    const HB_Y      = 4;    // image top-left Y on screen
+    const HB_DISP_W = 300;  // displayed width
+    const HB_DISP_H = 48;   // displayed height
 
-    // ── Static backing ───────────────────────────────────────────────────────
-    const bg = sc.add.graphics().setScrollFactor(SF).setDepth(D);
+    // Inner fill channel coordinates (screen-space, calibrated to the PNG)
+    // Adjust FX / FW if the red fill needs nudging left/right
+    const FX = 113;  // left edge of the fill zone (after skull ornament)
+    const FY = 15;   // top edge of the fill zone
+    const FW = 165;  // max fill width at 100% health
+    const FH = 25;   // fill height
 
-    // Drop shadow
-    bg.fillStyle(0x000000, 0.65);
-    bg.fillRect(PX + 4, PY + 4, PW + 2, PH + 2);
+    // ── Dark void channel (always visible behind the fill) ───────────────────
+    sc.add.rectangle(FX, FY, FW, FH, C.BAR_VOID)
+      .setOrigin(0, 0).setScrollFactor(SF).setDepth(D);
 
-    // Panel bg
-    bg.fillStyle(C.FRAME_DARK, 1);
-    bg.fillRect(PX, PY, PW, PH);
-    bg.fillStyle(0x160606, 1);
-    bg.fillRect(PX + 3, PY + 3, PW - 6, PH - 6);
+    // ── Red fill rectangle (width tweened on damage) ─────────────────────────
+    this._hpFillRect = sc.add.rectangle(FX, FY, FW, FH, C.BAR_BRIGHT)
+      .setOrigin(0, 0).setScrollFactor(SF).setDepth(D + 1);
 
-    // Diagonal texture lines (simulate rough metal)
-    bg.lineStyle(1, 0x2a0808, 0.4);
-    for (let i = 0; i < 14; i++) {
-      const tx = PX + i * 22;
-      bg.beginPath(); bg.moveTo(tx, PY); bg.lineTo(tx + 10, PY + PH); bg.strokePath();
-    }
+    // Geometry mask — hard-clips the fill to the inner channel
+    // so it can never bleed onto the skull or outer frame
+    this._hpMaskGfx = sc.add.graphics().setScrollFactor(SF);
+    this._hpMaskGfx.fillStyle(0xffffff);
+    this._hpMaskGfx.fillRect(FX, FY, FW, FH);
+    this._hpFillRect.setMask(this._hpMaskGfx.createGeometryMask());
 
-    // Outer copper frame
-    bg.lineStyle(2, C.FRAME_COPPER, 1);
-    bg.strokeRect(PX, PY, PW, PH);
-    // Inner dark frame
-    bg.lineStyle(1, C.FRAME_MID, 0.6);
-    bg.strokeRect(PX + 3, PY + 3, PW - 6, PH - 6);
-    // Bright top edge highlight
-    bg.lineStyle(1, C.FRAME_BRIGHT, 0.9);
-    bg.beginPath(); bg.moveTo(PX, PY); bg.lineTo(PX + PW, PY); bg.strokePath();
+    // ── Frame image — rendered on top so skull + border are always intact ─────
+    sc.add.image(HB_X, HB_Y, 'healthbar')
+      .setOrigin(0, 0)
+      .setScrollFactor(SF)
+      .setDepth(D + 4)
+      .setDisplaySize(HB_DISP_W, HB_DISP_H);
 
-    // Corner ornament squares
-    [[PX,PY],[PX+PW,PY],[PX,PY+PH],[PX+PW,PY+PH]].forEach(([cx,cy]) => {
-      bg.fillStyle(C.CORNER_GOLD, 1); bg.fillRect(cx-4, cy-4, 8, 8);
-      bg.fillStyle(C.FRAME_DARK,  1); bg.fillRect(cx-2, cy-2, 4, 4);
-    });
+    // ── Tween state ───────────────────────────────────────────────────────────
+    this._hpDisplayPct    = 1;
+    this._hpLastTargetPct = 1;
+    this._hpFillMaxW      = FW;
+    this._hpFillH         = FH;
 
-    // Vine/thorn accents on frame edges
-    [0.3, 0.55, 0.75].forEach(t => {
-      const tx = PX + t * PW;
-      bg.fillStyle(C.FRAME_COPPER, 0.7);
-      bg.fillRect(tx - 1, PY - 3, 3, 5);
-      bg.fillRect(tx - 1, PY + PH - 2, 3, 5);
-    });
-
-    // Bar trough (dark channel behind fill)
-    bg.fillStyle(C.BAR_VOID, 1);
-    fillPara(bg, BAR_X - 1, BAR_Y - 1, HP_W + 4, BAR_H + 2, SLANT);
-
-    // Separator between portrait and bar area
-    bg.fillStyle(C.FRAME_MID, 0.7);
-    bg.fillRect(EMB_X + 24, PY + 4, 2, PH - 8);
-
-    // HP label
-    sc.add.text(BAR_X + SLANT + 2, BAR_Y + 1, 'HP', {
-      fontSize: '9px', fontFamily: 'monospace',
-      color: '#ff2255', stroke: '#000', strokeThickness: 2,
-    }).setScrollFactor(SF).setDepth(D + 6);
-
-    // ── Oni portrait ─────────────────────────────────────────────────────────
-    const fg = sc.add.graphics().setScrollFactor(SF).setDepth(D + 5);
-    drawOniPortrait(fg, EMB_X, EMB_Y, 20);
-
-    // ── Bar fill graphics (redrawn every frame) ──────────────────────────────
-    this._hpGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 2);
-
-    // ── Bar border (drawn over fill) ─────────────────────────────────────────
-    const bfg = sc.add.graphics().setScrollFactor(SF).setDepth(D + 4);
-    bfg.lineStyle(1.5, C.FRAME_COPPER, 1);
-    strokePara(bfg, BAR_X - 1, BAR_Y - 1, HP_W + 4, BAR_H + 2, SLANT);
-    bfg.lineStyle(1, C.FRAME_BRIGHT, 0.5);
-    strokePara(bfg, BAR_X, BAR_Y, HP_W + 2, BAR_H, SLANT);
-
-    // End cap
-    bfg.fillStyle(C.CORNER_GOLD, 1);
-    bfg.fillRect(BAR_X + HP_W + 2, BAR_Y + BAR_H / 2 - 5, 9, 9);
-    bfg.fillStyle(C.FRAME_DARK, 1);
-    bfg.fillRect(BAR_X + HP_W + 4, BAR_Y + BAR_H / 2 - 3, 5, 5);
-
-    // ── Shimmer overlay (animated alpha) ─────────────────────────────────────
-    this._hpShimGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 3);
-    sc.tweens.add({
-      targets: this._hpShimGfx,
-      alpha: { from: 0.1, to: 0.7 },
-      duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-    });
-
-    // Store geometry for update()
-    this._hpBarX = BAR_X; this._hpBarY = BAR_Y; this._hpBarH = BAR_H;
-
-    // ── Armor pips ────────────────────────────────────────────────────────────
-    this._armorLabel = sc.add.text(BAR_X, PY + PH + 4, 'ARMOR', {
+    // ── Armor pips (below bar) ────────────────────────────────────────────────
+    this._armorLabel = sc.add.text(HB_X + 8, HB_Y + HB_DISP_H + 4, 'ARMOR', {
       fontSize: '9px', fontFamily: 'monospace', color: '#997700',
     }).setScrollFactor(SF).setDepth(D + 3).setAlpha(0);
 
     this._pips = Array.from({ length: 5 }, (_, i) =>
-      sc.add.rectangle(BAR_X + 36 + i * 20, PY + PH + 14, 16, 9, 0xffcc00)
+      sc.add.rectangle(HB_X + 44 + i * 20, HB_Y + HB_DISP_H + 14, 16, 9, 0xffcc00)
         .setScrollFactor(SF).setDepth(D + 2).setAlpha(0),
     );
   }
@@ -505,13 +451,21 @@ export default class HUD {
   //  PER-FRAME UPDATE
   // ══════════════════════════════════════════════════════════════════════════
   update(player, boss = null) {
-    // ── Player HP ────────────────────────────────────────────────────────────
-    this._drawBar(
-      this._hpGfx, this._hpShimGfx,
-      this._hpBarX, this._hpBarY, this._hpBarH,
-      HP_W,
-      Math.max(0, Math.min(1, player.health / player.maxHealth)),
-    );
+    // ── Player HP (image bar — smooth tween on damage) ───────────────────────
+    const targetPct = Math.max(0, Math.min(1, player.health / player.maxHealth));
+    if (targetPct !== this._hpLastTargetPct) {
+      this._hpLastTargetPct = targetPct;
+      this._scene.tweens.killTweensOf(this);
+      this._scene.tweens.add({
+        targets : this,
+        _hpDisplayPct : targetPct,
+        duration : 280,
+        ease     : 'Sine.easeOut',
+      });
+    }
+    const fillW = Math.max(0, this._hpFillMaxW * this._hpDisplayPct);
+    this._hpFillRect.setDisplaySize(Math.max(1, fillW), this._hpFillH);
+    this._hpFillRect.setAlpha(fillW > 0 ? 1 : 0);
 
     // ── Boss HP ───────────────────────────────────────────────────────────────
     const b = boss ?? this._boss;

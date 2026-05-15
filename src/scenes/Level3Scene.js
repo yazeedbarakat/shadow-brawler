@@ -22,7 +22,7 @@ export default class Level3Scene extends Phaser.Scene {
       'player', 'player_walk', 'player_jump', 'player_hit',
       'player_punch', 'player_sword', 'player_kick',
       'enemy', 'enemy_ranged', 'pickup_throwingstar', 'proj_star', 'proj_enemy',
-      'bg_forest', 'plat_forest',
+      'bg_forest', 'plat_forest', 'healthbar',
     ]);
   }
 

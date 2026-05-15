@@ -57,6 +57,9 @@ export const ASSET_DEFS = {
   bg_castle:           { path: '/assets/backgrounds/level4theme.webp',    w: 1600, h: 450 },
   bg_throne:           { path: '/assets/backgrounds/level5theme.webp',    w: 1200, h: 450 },
 
+  // ── HUD elements ────────────────────────────────────────────────────────────
+  healthbar: { path: '/assets/sprites/healthbar.png', w: 165, h: 49 },
+
   // ── Platform tiles (tiled horizontally across each platform's full width) ──
   plat_city:           { path: '/assets/sprites/platform_city.png',       w: 16,   h: 16  },
   plat_temple:         { path: '/assets/sprites/platform_temple.png',     w: 16,   h: 16  },
