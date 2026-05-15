@@ -227,41 +227,30 @@ export default class HUD {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  PLAYER BAR (top-left) — image-based health bar
+  //  PLAYER BAR (top-left) — image frame + Graphics fill
   // ══════════════════════════════════════════════════════════════════════════
   _buildPlayerBar() {
     const sc = this._scene;
 
-    // ── Image frame layout ───────────────────────────────────────────────────
-    // The PNG (165×49) is displayed at 300×48 — skull + ornaments always on top
-    const HB_X      = 4;    // image top-left X on screen
-    const HB_Y      = 4;    // image top-left Y on screen
-    const HB_DISP_W = 300;  // displayed width
-    const HB_DISP_H = 48;   // displayed height
+    // ── Frame image dimensions ────────────────────────────────────────────────
+    // Source PNG is 3718×1152. Display at 300 wide, preserve aspect ratio → 93 tall.
+    const HB_X      = 0;
+    const HB_Y      = 0;
+    const HB_DISP_W = 300;
+    const HB_DISP_H = 93;   // Math.round(300 * 1152 / 3718)
 
-    // Inner fill channel coordinates (screen-space, calibrated to the PNG)
-    // Adjust FX / FW if the red fill needs nudging left/right
-    const FX = 113;  // left edge of the fill zone (after skull ornament)
-    const FY = 15;   // top edge of the fill zone
-    const FW = 165;  // max fill width at 100% health
-    const FH = 25;   // fill height
+    // ── Fill zone (screen coords, user-specified, relative to image origin) ───
+    // Starts just after the skull ornament, ends before the right decoration.
+    // Tweak FX / FY / FW / FH here if the overlay needs nudging.
+    const FX = 120;  // left edge of fill  (px from screen left)
+    const FW = 160;  // max fill width at 100% HP
+    const FH = 18;   // fill height
+    const FY = HB_Y + Math.round((HB_DISP_H - FH) / 2);  // vertically centred
 
-    // ── Dark void channel (always visible behind the fill) ───────────────────
-    sc.add.rectangle(FX, FY, FW, FH, C.BAR_VOID)
-      .setOrigin(0, 0).setScrollFactor(SF).setDepth(D);
+    // ── Red fill — drawn by Graphics every frame (reliable in all renderers) ──
+    this._hpGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 1);
 
-    // ── Red fill rectangle (width tweened on damage) ─────────────────────────
-    this._hpFillRect = sc.add.rectangle(FX, FY, FW, FH, C.BAR_BRIGHT)
-      .setOrigin(0, 0).setScrollFactor(SF).setDepth(D + 1);
-
-    // Geometry mask — hard-clips the fill to the inner channel
-    // so it can never bleed onto the skull or outer frame
-    this._hpMaskGfx = sc.add.graphics().setScrollFactor(SF);
-    this._hpMaskGfx.fillStyle(0xffffff);
-    this._hpMaskGfx.fillRect(FX, FY, FW, FH);
-    this._hpFillRect.setMask(this._hpMaskGfx.createGeometryMask());
-
-    // ── Frame image — rendered on top so skull + border are always intact ─────
+    // ── Frame image — always on top, skull + border always fully visible ───────
     sc.add.image(HB_X, HB_Y, 'healthbar')
       .setOrigin(0, 0)
       .setScrollFactor(SF)
@@ -271,16 +260,18 @@ export default class HUD {
     // ── Tween state ───────────────────────────────────────────────────────────
     this._hpDisplayPct    = 1;
     this._hpLastTargetPct = 1;
+    this._hpFillX         = FX;
+    this._hpFillY         = FY;
     this._hpFillMaxW      = FW;
     this._hpFillH         = FH;
 
     // ── Armor pips (below bar) ────────────────────────────────────────────────
-    this._armorLabel = sc.add.text(HB_X + 8, HB_Y + HB_DISP_H + 4, 'ARMOR', {
+    this._armorLabel = sc.add.text(8, HB_DISP_H + 4, 'ARMOR', {
       fontSize: '9px', fontFamily: 'monospace', color: '#997700',
     }).setScrollFactor(SF).setDepth(D + 3).setAlpha(0);
 
     this._pips = Array.from({ length: 5 }, (_, i) =>
-      sc.add.rectangle(HB_X + 44 + i * 20, HB_Y + HB_DISP_H + 14, 16, 9, 0xffcc00)
+      sc.add.rectangle(44 + i * 20, HB_DISP_H + 14, 16, 9, 0xffcc00)
         .setScrollFactor(SF).setDepth(D + 2).setAlpha(0),
     );
   }
@@ -451,21 +442,24 @@ export default class HUD {
   //  PER-FRAME UPDATE
   // ══════════════════════════════════════════════════════════════════════════
   update(player, boss = null) {
-    // ── Player HP (image bar — smooth tween on damage) ───────────────────────
+    // ── Player HP — tween _hpDisplayPct, redraw Graphics fill every frame ─────
     const targetPct = Math.max(0, Math.min(1, player.health / player.maxHealth));
     if (targetPct !== this._hpLastTargetPct) {
       this._hpLastTargetPct = targetPct;
       this._scene.tweens.killTweensOf(this);
       this._scene.tweens.add({
-        targets : this,
+        targets       : this,
         _hpDisplayPct : targetPct,
-        duration : 280,
-        ease     : 'Sine.easeOut',
+        duration      : 280,
+        ease          : 'Sine.easeOut',
       });
     }
-    const fillW = Math.max(0, this._hpFillMaxW * this._hpDisplayPct);
-    this._hpFillRect.setDisplaySize(Math.max(1, fillW), this._hpFillH);
-    this._hpFillRect.setAlpha(fillW > 0 ? 1 : 0);
+    const fillW = this._hpFillMaxW * Math.max(0, this._hpDisplayPct);
+    this._hpGfx.clear();
+    if (fillW > 0) {
+      this._hpGfx.fillStyle(0xcc0020, 1);
+      this._hpGfx.fillRect(this._hpFillX, this._hpFillY, fillW, this._hpFillH);
+    }
 
     // ── Boss HP ───────────────────────────────────────────────────────────────
     const b = boss ?? this._boss;
