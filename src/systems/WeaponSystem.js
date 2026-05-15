@@ -306,11 +306,15 @@ export default class WeaponSystem {
 
   _showMeleeEffect({ x, y, w, h, attackType }) {
     const STYLES = {
-      ATTACK_PUNCH: { color: 0xffaa33, alpha: 0.80, dur: 160, scaleEnd: 1.5 },
-      ATTACK_KICK:  { color: 0xff5533, alpha: 0.75, dur: 160, scaleEnd: 1.6 },
-      ATTACK_SWORD: { color: 0xffee00, alpha: 0.90, dur: 220, scaleEnd: 1.9 },
+      ATTACK_1:     { color: 0xffaa33, alpha: 0.80, dur: 160, scaleEnd: 1.5 },
+      ATTACK_2:     { color: 0xff5533, alpha: 0.75, dur: 160, scaleEnd: 1.6 },
+      ATTACK_3:     { color: 0xffee00, alpha: 0.90, dur: 220, scaleEnd: 1.9 },
+      ATTACK_HEAVY: { color: 0xff2200, alpha: 0.95, dur: 280, scaleEnd: 2.2 },
+      ATTACK_AIR:   { color: 0xffaa33, alpha: 0.80, dur: 160, scaleEnd: 1.5 },
+      ATTACK_DASH:  { color: 0xff8800, alpha: 0.85, dur: 200, scaleEnd: 2.0 },
+      COUNTER:      { color: 0xffffff, alpha: 1.00, dur: 300, scaleEnd: 2.5 },
     };
-    const { color, alpha, dur, scaleEnd } = STYLES[attackType] ?? STYLES.ATTACK_PUNCH;
+    const { color, alpha, dur, scaleEnd } = STYLES[attackType] ?? STYLES.ATTACK_1;
 
     if (this._flash) { this._flash.destroy(); this._flash = null; }
     this._flash = this.scene.add.rectangle(x, y, w, h, color, alpha).setDepth(8);

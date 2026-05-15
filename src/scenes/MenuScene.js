@@ -84,7 +84,7 @@ export default class MenuScene extends Phaser.Scene {
     // ── Controls legend (pinned to bottom edge) ───────────────────────────────
     this.add.rectangle(W / 2, H - 14, W, 28, 0x000000, 0.62).setDepth(4);
 
-    this.add.text(W / 2, H - 14, '← → Move   ↑ Jump   Z Punch   X Kick', {
+    this.add.text(W / 2, H - 14, '← → Move   Shift Run   ↑ Jump   Z Attack   X Heavy   S Block   C Dash   ↓+C Roll', {
       fontSize: '11px',
       fontFamily: 'monospace',
       color: '#887799',

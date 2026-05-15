@@ -170,8 +170,6 @@ export default class Level2Scene extends Phaser.Scene {
     this.enemies    = [];
     this.enemyGroup = this.physics.add.group();
 
-    // Platform tops: P2 y=308−8=300, P3 y=252−8=244, P4 y=310−8=302, P6 y=308−8=300
-    // Enemy center = top − 26 (half of 52px height)
     const bossCfg = {
       health: 300, speed: 72, chaseSpeed: 108,
       detectionRange: 700, contactDamage: 16,

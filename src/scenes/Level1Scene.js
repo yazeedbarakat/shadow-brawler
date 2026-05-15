@@ -104,9 +104,6 @@ export default class Level1Scene extends Phaser.Scene {
     this.enemies    = [];
     this.enemyGroup = this.physics.add.group();
 
-    // Spawn above each target platform — gravity drops them onto the ledge
-    // Target platform tops: P3 y=252−8=244, P4 y=328−8=320, P6 y=308−8=300
-    // Enemy h=52 → center sits at platformTop − 26
     const bossCfg = {
       health: 220, speed: 70, chaseSpeed: 105,
       detectionRange: 700, contactDamage: 14,
