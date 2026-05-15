@@ -271,7 +271,7 @@ export default class Level3Scene extends Phaser.Scene {
     const alive = this.enemies.filter(e => e.sprite.active);
     alive.forEach(e => e.update(this.player, delta));
     this.enemies = alive;
-
+    this._checkDoorUnlock();
   }
 
   _endGame(win) {
