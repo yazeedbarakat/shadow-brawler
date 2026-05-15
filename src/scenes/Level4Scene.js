@@ -9,7 +9,7 @@ import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 
 const WORLD_W    = 1600;
 const WORLD_H    = 450;
-const GROUND_TOP = WORLD_H - 20;
+const GROUND_TOP = WORLD_H - 60;
 
 export default class Level4Scene extends Phaser.Scene {
   constructor() {
@@ -136,7 +136,7 @@ export default class Level4Scene extends Phaser.Scene {
     const SHADE = 0x16162a; // underside shadow
 
     const defs = [
-      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x0e0e1c, edge: false },
+      { x: WORLD_W / 2, y: GROUND_TOP + 10, w: WORLD_W, h: 20, color: 0x0e0e1c, edge: false },
     ];
 
     const PLAT_KEY = 'plat_castle';
@@ -147,6 +147,7 @@ export default class Level4Scene extends Phaser.Scene {
         ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
         : this.add.rectangle(x, y, w, h, color);
       this.physics.add.existing(plat, true);
+      if (!edge) plat.setAlpha(0);
 
       if (!useTex && edge) {
         this.add.rectangle(x, y - h / 2 + 1, w, 3, GOLD);
@@ -164,7 +165,7 @@ export default class Level4Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 416);
+    this.player = new Player(this, 60, 376);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -188,10 +189,10 @@ export default class Level4Scene extends Phaser.Scene {
     // Spawn above platforms so gravity settles them
     // P2 top=300, P3 top=244, P4 top=302, P6 top=300; enemy h=64 → center = top-32
     [
-      { x: 300,  y: 398 },
-      { x: 650,  y: 398 },
-      { x: 950,  y: 398 },
-      { x: 1250, y: 398 },
+      { x: 300,  y: 358 },
+      { x: 650,  y: 358 },
+      { x: 950,  y: 358 },
+      { x: 1250, y: 358 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, heavyCfg);
       this.enemies.push(e);

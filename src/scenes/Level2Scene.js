@@ -8,7 +8,7 @@ import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 
 const WORLD_W    = 1600;
 const WORLD_H    = 450;
-const GROUND_TOP = WORLD_H - 20;
+const GROUND_TOP = WORLD_H - 60;
 
 export default class Level2Scene extends Phaser.Scene {
   constructor() {
@@ -134,7 +134,7 @@ export default class Level2Scene extends Phaser.Scene {
     const SHADE = 0x4a3010;  // underside shadow
 
     const defs = [
-      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x2a1808, edge: false },
+      { x: WORLD_W / 2, y: GROUND_TOP + 10, w: WORLD_W, h: 20, color: 0x2a1808, edge: false },
     ];
 
     return defs.map(({ x, y, w, h = 16, color = STONE, edge = true }) => {
@@ -142,6 +142,7 @@ export default class Level2Scene extends Phaser.Scene {
         ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
         : this.add.rectangle(x, y, w, h, color);
       this.physics.add.existing(plat, true);
+      if (!edge) plat.setAlpha(0);
 
       if (!useTex && edge) {
         this.add.rectangle(x, y - h / 2 + 1, w, 3, TOP);
@@ -159,7 +160,7 @@ export default class Level2Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 416);
+    this.player = new Player(this, 60, 376);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -173,13 +174,13 @@ export default class Level2Scene extends Phaser.Scene {
     // Platform tops: P2 y=308−8=300, P3 y=252−8=244, P4 y=310−8=302, P6 y=308−8=300
     // Enemy center = top − 26 (half of 52px height)
     const spawns = [
-      { x: 300,  y: 404, cfg: { health: 80, speed: 78, chaseSpeed: 114,
+      { x: 300,  y: 364, cfg: { health: 80, speed: 78, chaseSpeed: 114,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 600,  y: 404, cfg: { health: 80, speed: 76, chaseSpeed: 110,
+      { x: 600,  y: 364, cfg: { health: 80, speed: 76, chaseSpeed: 110,
           detectionRange: 260, contactDamage: 12, color: 0xaa5522 } },
-      { x: 900,  y: 404, cfg: { health: 80, speed: 80, chaseSpeed: 116,
+      { x: 900,  y: 364, cfg: { health: 80, speed: 80, chaseSpeed: 116,
           detectionRange: 255, contactDamage: 12, color: 0xaa5522 } },
-      { x: 1200, y: 404, cfg: { health: 80, speed: 82, chaseSpeed: 118,
+      { x: 1200, y: 364, cfg: { health: 80, speed: 82, chaseSpeed: 118,
           detectionRange: 265, contactDamage: 12, color: 0xaa5522 } },
     ];
 

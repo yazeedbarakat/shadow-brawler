@@ -8,7 +8,7 @@ import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 
 const WORLD_W    = 1600;
 const WORLD_H    = 450;
-const GROUND_TOP = WORLD_H - 20; // top surface of the ground platform
+const GROUND_TOP = WORLD_H - 60; // top surface of the ground platform
 
 export default class Level1Scene extends Phaser.Scene {
   constructor() {
@@ -144,7 +144,7 @@ export default class Level1Scene extends Phaser.Scene {
     const EDGE = 0x7a7a96;   // lighter top edge
 
     const defs = [
-      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x22222e, edge: false },
+      { x: WORLD_W / 2, y: GROUND_TOP + 10, w: WORLD_W, h: 20, color: 0x22222e, edge: false },
     ];
 
     return defs.map(({ x, y, w, h = 16, color = BODY, edge = true }) => {
@@ -152,6 +152,7 @@ export default class Level1Scene extends Phaser.Scene {
         ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
         : this.add.rectangle(x, y, w, h, color);
       this.physics.add.existing(plat, true);
+      if (!edge) plat.setAlpha(0);
 
       if (!useTex && edge) {
         this.add.rectangle(x, y - h / 2 + 1, w, 3, EDGE);
@@ -168,7 +169,7 @@ export default class Level1Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 416);
+    this.player = new Player(this, 60, 376);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -183,9 +184,9 @@ export default class Level1Scene extends Phaser.Scene {
     // Target platform tops: P3 y=252−8=244, P4 y=328−8=320, P6 y=308−8=300
     // Enemy h=52 → center sits at platformTop − 26
     const spawns = [
-      { x: 400,  y: 404 },
-      { x: 800,  y: 404 },
-      { x: 1200, y: 404 },
+      { x: 400,  y: 364 },
+      { x: 800,  y: 364 },
+      { x: 1200, y: 364 },
     ];
 
     spawns.forEach(({ x, y }) => {

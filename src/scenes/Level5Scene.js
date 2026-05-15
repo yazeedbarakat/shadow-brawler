@@ -10,7 +10,7 @@ const ATTACK_DAMAGE = { ATTACK_PUNCH: 10, ATTACK_KICK: 15, ATTACK_SWORD: 25 };
 
 const WORLD_W    = 1200;
 const WORLD_H    = 450;
-const GROUND_TOP = WORLD_H - 20;
+const GROUND_TOP = WORLD_H - 60;
 
 export default class Level5Scene extends Phaser.Scene {
   constructor() {
@@ -136,7 +136,7 @@ export default class Level5Scene extends Phaser.Scene {
     const SHADE = 0x100c1a;
 
     const defs = [
-      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x0c0818, edge: false },
+      { x: WORLD_W / 2, y: GROUND_TOP + 10, w: WORLD_W, h: 20, color: 0x0c0818, edge: false },
     ];
 
     const PLAT_KEY = 'plat_boss';
@@ -147,6 +147,7 @@ export default class Level5Scene extends Phaser.Scene {
         ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
         : this.add.rectangle(x, y, w, h, color);
       this.physics.add.existing(plat, true);
+      if (!edge) plat.setAlpha(0);
 
       if (!useTex && edge) {
         this.add.rectangle(x, y - h / 2 + 1, w, 3, TRIM);
@@ -159,7 +160,7 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 80, 416);
+    this.player = new Player(this, 80, 376);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame());
   }
@@ -167,7 +168,7 @@ export default class Level5Scene extends Phaser.Scene {
   // ─── Boss ────────────────────────────────────────────────────────────────
 
   _createBoss() {
-    this._boss = new Boss(this, 950, 382);
+    this._boss = new Boss(this, 950, 342);
     // Boss collides with platforms and world bounds (already set in Boss constructor)
     this.physics.add.collider(this._boss.sprite, this._platforms);
   }

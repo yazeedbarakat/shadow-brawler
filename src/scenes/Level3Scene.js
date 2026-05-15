@@ -9,7 +9,7 @@ import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
 
 const WORLD_W    = 1600;
 const WORLD_H    = 450;
-const GROUND_TOP = WORLD_H - 20;
+const GROUND_TOP = WORLD_H - 60;
 
 export default class Level3Scene extends Phaser.Scene {
   constructor() {
@@ -129,7 +129,7 @@ export default class Level3Scene extends Phaser.Scene {
     const UNDER = 0x0e1e0a;  // dark underside shadow
 
     const defs = [
-      { x: WORLD_W / 2, y: WORLD_H - 10, w: WORLD_W, h: 20, color: 0x030803, edge: false },
+      { x: WORLD_W / 2, y: GROUND_TOP + 10, w: WORLD_W, h: 20, color: 0x030803, edge: false },
     ];
 
     const PLAT_KEY = 'plat_forest';
@@ -140,6 +140,7 @@ export default class Level3Scene extends Phaser.Scene {
         ? this.add.tileSprite(x, y, w, h, PLAT_KEY)
         : this.add.rectangle(x, y, w, h, color);
       this.physics.add.existing(plat, true);
+      if (!edge) plat.setAlpha(0);
 
       if (!useTex && edge) {
         this.add.rectangle(x, y - h / 2 + 1, w, 4, TOP);
@@ -157,7 +158,7 @@ export default class Level3Scene extends Phaser.Scene {
   // ─── Player ───────────────────────────────────────────────────────────────
 
   _createPlayer() {
-    this.player = new Player(this, 60, 416);
+    this.player = new Player(this, 60, 376);
     this.physics.add.collider(this.player.sprite, this._platforms);
     this.events.on('player-dead', () => this._endGame(false));
   }
@@ -182,9 +183,9 @@ export default class Level3Scene extends Phaser.Scene {
     // Melee enemies — faster, rush the player
     // Platform tops: P2 y=304−8=296, P4 y=308−8=300, P6 y=306−8=298
     [
-      { x: 350,  y: 404 },
-      { x: 800,  y: 404 },
-      { x: 1200, y: 404 },
+      { x: 350,  y: 364 },
+      { x: 800,  y: 364 },
+      { x: 1200, y: 364 },
     ].forEach(({ x, y }) => {
       const e = new Enemy(this, x, y, meleeCfg);
       this.enemies.push(e);
@@ -194,8 +195,8 @@ export default class Level3Scene extends Phaser.Scene {
     // Ranged enemies — stop and shoot glowing projectiles
     // Platform tops: P3 y=248−8=240, P5 y=252−8=244
     [
-      { x: 600,  y: 404 },
-      { x: 1000, y: 404 },
+      { x: 600,  y: 364 },
+      { x: 1000, y: 364 },
     ].forEach(({ x, y }) => {
       const re = new RangedEnemy(this, x, y, rangedCfg);
       this.enemies.push(re);
