@@ -4,6 +4,7 @@ import Boss         from '../characters/Boss.js';
 import WeaponSystem from '../systems/WeaponSystem.js';
 import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
+import { addWeather } from '../systems/WeatherSystem.js';
 
 // Canonical melee damage values — mirrors CombatSystem.js so no import needed here
 const ATTACK_DAMAGE = { ATTACK_PUNCH: 10, ATTACK_KICK: 15, ATTACK_SWORD: 25 };
@@ -38,6 +39,7 @@ export default class Level5Scene extends Phaser.Scene {
     this._createBoss();
     this._setupCombat();
     this._buildHUD();
+    addWeather(this, 'ash');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
     this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);

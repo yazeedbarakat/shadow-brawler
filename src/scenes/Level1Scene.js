@@ -5,6 +5,7 @@ import CombatSystem from '../systems/CombatSystem.js';
 import WeaponSystem from '../systems/WeaponSystem.js';
 import HUD          from '../systems/HUD.js';
 import { preloadAssets, assetLoaded } from '../systems/AssetLoader.js';
+import { addWeather } from '../systems/WeatherSystem.js';
 
 const WORLD_W    = 1600;
 const WORLD_H    = 450;
@@ -36,6 +37,7 @@ export default class Level1Scene extends Phaser.Scene {
     this._createEnemies();
     this._setupSystems();
     this._buildHUD();
+    addWeather(this, 'rain');
 
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
     this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.04);
