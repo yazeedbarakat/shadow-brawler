@@ -1,67 +1,74 @@
 /* global Phaser */
 
-const HP_W = 190;   // full-width of the HP bar fill
-const SP_W = 190;   // full-width of the SP bar fill
+// ── Constants ──────────────────────────────────────────────────────────────
+const HP_W   = 200;   // max fill width
+const SP_W   = 200;
+const SLANT  = 8;     // parallelogram end slant (px)
+const SF     = 0;     // scrollFactor (fixed to camera)
+const D_BASE = 20;    // base depth
 
-// Weapon icon descriptors — shapes drawn programmatically inside the slot
+// Weapon icon descriptors
 const WEAPON_ICONS = {
   sword: {
-    label: 'SWORD',
-    hint:  'C=swing  F=drop',
-    color: '#99aaff',
-    draw(scene, cx, cy, sf, d) {
+    hint: 'C=swing  F=drop', color: '#99aaff',
+    draw(scene, cx, cy, d) {
       return [
-        scene.add.rectangle(cx, cy - 5, 4, 18, 0x99aaff).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx, cy + 6, 18, 4,  0xddaa44).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx, cy + 12, 4, 8,  0x885533).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx, cy - 13, 2, 4,  0xccddff).setScrollFactor(sf).setDepth(d),
+        scene.add.rectangle(cx, cy - 5,  4, 18, 0x99aaff).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx, cy + 6, 18,  4, 0xddaa44).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx, cy + 12, 4,  8, 0x885533).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx, cy - 13, 2,  4, 0xccddff).setScrollFactor(SF).setDepth(d),
       ];
     },
   },
   pipe: {
-    label: 'PIPE',
-    hint:  'Z=smash (x2 dmg)  F=drop',
-    color: '#cccccc',
-    draw(scene, cx, cy, sf, d) {
+    hint: 'Z=smash (x2 dmg)  F=drop', color: '#cccccc',
+    draw(scene, cx, cy, d) {
       return [
-        scene.add.rectangle(cx, cy,      28, 8,  0xbbbbbb).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx - 13, cy,  5, 14, 0x888888).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx + 13, cy,  5, 14, 0x888888).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx,      cy - 3, 28, 2, 0xdddddd).setScrollFactor(sf).setDepth(d),
+        scene.add.rectangle(cx,      cy,      28, 8,  0xbbbbbb).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx - 13, cy,       5, 14, 0x888888).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx + 13, cy,       5, 14, 0x888888).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx,      cy - 3,  28, 2,  0xdddddd).setScrollFactor(SF).setDepth(d),
       ];
     },
   },
   throwingstar: {
-    label: 'STAR',
-    hint:  'Z=throw  F=drop',
-    color: '#ffee55',
-    draw(scene, cx, cy, sf, d) {
+    hint: 'Z=throw  F=drop', color: '#ffee55',
+    draw(scene, cx, cy, d) {
       return [
-        scene.add.rectangle(cx, cy, 5, 22, 0xffee55).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx, cy, 22, 5, 0xffee55).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx - 7, cy - 7, 5, 5, 0xffcc00).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx + 7, cy - 7, 5, 5, 0xffcc00).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx - 7, cy + 7, 5, 5, 0xffcc00).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx + 7, cy + 7, 5, 5, 0xffcc00).setScrollFactor(sf).setDepth(d),
-        scene.add.rectangle(cx, cy, 7, 7, 0xffffff).setScrollFactor(sf).setDepth(d + 1),
+        scene.add.rectangle(cx,      cy,       5, 22, 0xffee55).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx,      cy,      22,  5, 0xffee55).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx - 7,  cy - 7,   5,  5, 0xffcc00).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx + 7,  cy - 7,   5,  5, 0xffcc00).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx - 7,  cy + 7,   5,  5, 0xffcc00).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx + 7,  cy + 7,   5,  5, 0xffcc00).setScrollFactor(SF).setDepth(d),
+        scene.add.rectangle(cx,      cy,        7,  7, 0xffffff).setScrollFactor(SF).setDepth(d + 1),
       ];
     },
   },
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Parallelogram path helpers ─────────────────────────────────────────────
 
-/** Draw a hollow rectangle border using 4 thin filled rects. */
-function border(scene, cx, cy, w, h, thickness, color, alpha, sf, depth) {
-  const t = thickness;
-  const objs = [
-    scene.add.rectangle(cx,         cy - h/2 + t/2, w,     t, color, alpha),
-    scene.add.rectangle(cx,         cy + h/2 - t/2, w,     t, color, alpha),
-    scene.add.rectangle(cx - w/2 + t/2, cy,          t, h, color, alpha),
-    scene.add.rectangle(cx + w/2 - t/2, cy,          t, h, color, alpha),
-  ];
-  objs.forEach(o => o.setScrollFactor(sf).setDepth(depth));
-  return objs;
+/** Fill a left-slanted parallelogram. */
+function fillPara(gfx, x, y, w, h, slant) {
+  gfx.beginPath();
+  gfx.moveTo(x + slant, y);
+  gfx.lineTo(x + w,     y);
+  gfx.lineTo(x + w - slant, y + h);
+  gfx.lineTo(x,         y + h);
+  gfx.closePath();
+  gfx.fillPath();
+}
+
+/** Stroke a left-slanted parallelogram. */
+function strokePara(gfx, x, y, w, h, slant) {
+  gfx.beginPath();
+  gfx.moveTo(x + slant, y);
+  gfx.lineTo(x + w,     y);
+  gfx.lineTo(x + w - slant, y + h);
+  gfx.lineTo(x,         y + h);
+  gfx.closePath();
+  gfx.strokePath();
 }
 
 export default class HUD {
@@ -78,209 +85,299 @@ export default class HUD {
   // ── Build ──────────────────────────────────────────────────────────────────
 
   _build(_levelName) {
-    const sf = 0;
-    const D  = 20;
+    const sc  = this._scene;
+    const D   = D_BASE;
 
-    // ── Panel geometry ──────────────────────────────────────────────────────
-    const PX = 8, PY = 8;    // top-left of panel
-    const PW = 270, PH = 60; // panel width / height
-    const PCX = PX + PW / 2, PCY = PY + PH / 2;
+    // ══════════════════════════════════════════════════════════════════════
+    //  STATIC background graphics (panel, emblem, bar frames)
+    // ══════════════════════════════════════════════════════════════════════
+    const bg = sc.add.graphics().setScrollFactor(SF).setDepth(D);
 
-    // ── Panel background ────────────────────────────────────────────────────
-    // Drop shadow
-    this._scene.add.rectangle(PCX + 3, PCY + 3, PW + 8, PH + 8, 0x000000, 0.55)
-      .setScrollFactor(sf).setDepth(D);
-    // Main dark iron bg
-    this._scene.add.rectangle(PCX, PCY, PW, PH, 0x0d0808)
-      .setScrollFactor(sf).setDepth(D + 1);
-    // Subtle inner warm tint
-    this._scene.add.rectangle(PCX, PCY, PW - 4, PH - 4, 0x150c0c)
-      .setScrollFactor(sf).setDepth(D + 2);
+    // ── Panel shadow ───────────────────────────────────────────────────────
+    bg.fillStyle(0x000000, 0.6);
+    bg.fillRect(6, 6, 285, 70);
 
-    // Outer gold border
-    border(this._scene, PCX, PCY, PW, PH, 2, 0xb8860b, 1, sf, D + 3);
-    // Inner thin gold inset
-    border(this._scene, PCX, PCY, PW - 6, PH - 6, 1, 0x8b6914, 0.7, sf, D + 3);
+    // ── Main panel backing ─────────────────────────────────────────────────
+    bg.fillStyle(0x0e0808, 1);
+    bg.fillRect(8, 8, 280, 66);
 
-    // Corner accent squares (gold)
-    const corners = [
-      [PX + 2, PY + 2], [PX + PW - 2, PY + 2],
-      [PX + 2, PY + PH - 2], [PX + PW - 2, PY + PH - 2],
-    ];
+    // Panel inner warm tone
+    bg.fillStyle(0x180c0c, 1);
+    bg.fillRect(11, 11, 274, 60);
+
+    // ── Outer gold border ──────────────────────────────────────────────────
+    bg.lineStyle(2, 0xc8920a, 1);
+    bg.strokeRect(8, 8, 280, 66);
+
+    // Inner thin accent line
+    bg.lineStyle(1, 0x7a5808, 0.7);
+    bg.strokeRect(12, 12, 272, 58);
+
+    // Corner diamond accents
+    const corners = [[8,8],[288,8],[8,74],[288,74]];
     corners.forEach(([cx, cy]) => {
-      this._scene.add.rectangle(cx, cy, 5, 5, 0xdaa520)
-        .setScrollFactor(sf).setDepth(D + 4);
+      bg.fillStyle(0xe8a020, 1);
+      bg.fillRect(cx - 3, cy - 3, 6, 6);
     });
 
-    // ── Circular skull emblem ───────────────────────────────────────────────
-    const embX = PX + 32, embY = PCY;
+    // ── Portrait circle ────────────────────────────────────────────────────
+    const embX = 44, embY = 41;
 
-    // Glow behind emblem
-    this._scene.add.circle(embX, embY, 26, 0x440000, 0.6)
-      .setScrollFactor(sf).setDepth(D + 3);
+    // Outer glow
+    bg.fillStyle(0x660000, 0.35);
+    bg.fillCircle(embX, embY, 28);
+
     // Gold ring outer
-    this._scene.add.circle(embX, embY, 24, 0xb8860b)
-      .setScrollFactor(sf).setDepth(D + 4);
-    // Gold ring highlight ring
-    this._scene.add.circle(embX, embY, 22, 0xdaa520)
-      .setScrollFactor(sf).setDepth(D + 5);
+    bg.fillStyle(0xc8920a, 1);
+    bg.fillCircle(embX, embY, 25);
+
+    // Gold ring inner highlight
+    bg.fillStyle(0xe8c040, 1);
+    bg.fillCircle(embX, embY, 23);
+
     // Dark face bg
-    this._scene.add.circle(embX, embY, 20, 0x1a0404)
-      .setScrollFactor(sf).setDepth(D + 6);
+    bg.fillStyle(0x120404, 1);
+    bg.fillCircle(embX, embY, 21);
 
-    // Pixel skull
-    const BONE = 0xc8b49a, VOID = 0x050505;
-    const sx = embX, sy = embY - 1;
-    // Cranium
-    this._scene.add.rectangle(sx,     sy - 8, 10, 4,  BONE).setScrollFactor(sf).setDepth(D + 7);
-    this._scene.add.rectangle(sx,     sy - 4, 14, 8,  BONE).setScrollFactor(sf).setDepth(D + 7);
-    // Eye sockets
-    this._scene.add.rectangle(sx - 4, sy - 3,  4, 5, VOID).setScrollFactor(sf).setDepth(D + 8);
-    this._scene.add.rectangle(sx + 4, sy - 3,  4, 5, VOID).setScrollFactor(sf).setDepth(D + 8);
-    // Nose
-    this._scene.add.rectangle(sx,     sy + 1,  2, 3, VOID, 0.8).setScrollFactor(sf).setDepth(D + 8);
-    // Jaw
-    this._scene.add.rectangle(sx,     sy + 5, 12, 5,  BONE).setScrollFactor(sf).setDepth(D + 7);
-    // Teeth gaps
-    this._scene.add.rectangle(sx - 4, sy + 7,  2, 5, VOID).setScrollFactor(sf).setDepth(D + 8);
-    this._scene.add.rectangle(sx,     sy + 7,  2, 5, VOID).setScrollFactor(sf).setDepth(D + 8);
-    this._scene.add.rectangle(sx + 4, sy + 7,  2, 5, VOID).setScrollFactor(sf).setDepth(D + 8);
-    // Red eye glow
-    this._scene.add.circle(sx - 4, sy - 2, 2, 0xff2200, 0.55).setScrollFactor(sf).setDepth(D + 9);
-    this._scene.add.circle(sx + 4, sy - 2, 2, 0xff2200, 0.55).setScrollFactor(sf).setDepth(D + 9);
+    // ── Separator line ──────────────────────────────────────────────────────
+    bg.fillStyle(0x7a5808, 0.8);
+    bg.fillRect(72, 14, 2, 58);
 
-    // Separator between emblem and bars
-    this._scene.add.rectangle(PX + 58, PCY, 2, PH - 10, 0x6b4f10, 0.6)
-      .setScrollFactor(sf).setDepth(D + 4);
-
-    // ── HP bar ──────────────────────────────────────────────────────────────
-    const barX = PX + 64;
-    const hpY  = PY + 19;
-    const barH = 16;
+    // ── HP bar trough ──────────────────────────────────────────────────────
+    const hpX = 78, hpY = 16, hpH = 18;
+    bg.fillStyle(0x0a0000, 1);
+    fillPara(bg, hpX - 1, hpY - 1, HP_W + 2, hpH + 2, SLANT);
 
     // HP label
-    this._scene.add.text(barX, hpY - 11, 'HP', {
+    sc.add.text(hpX + SLANT + 2, hpY + 1, 'HP', {
       fontSize: '9px', fontFamily: 'monospace',
-      color: '#cc3333', stroke: '#000000', strokeThickness: 2,
-    }).setScrollFactor(sf).setDepth(D + 5);
+      color: '#dd3333', stroke: '#000', strokeThickness: 2,
+    }).setScrollFactor(SF).setDepth(D + 6);
 
-    // Bar dark channel
-    this._scene.add.rectangle(barX + HP_W / 2, hpY, HP_W + 4, barH + 4, 0x000000)
-      .setScrollFactor(sf).setDepth(D + 4).setOrigin(0.5, 0.5);
-    this._scene.add.rectangle(barX + HP_W / 2, hpY, HP_W + 2, barH + 2, 0x1a0202)
-      .setScrollFactor(sf).setDepth(D + 5).setOrigin(0.5, 0.5);
-
-    // HP fill — left-anchored, shrinks right
-    this._hpFill = this._scene.add.rectangle(barX, hpY, HP_W, barH, 0x8b0000)
-      .setScrollFactor(sf).setDepth(D + 6).setOrigin(0, 0.5);
-
-    // Bright glowing shimmer band at top of fill
-    this._hpShine = this._scene.add.rectangle(barX, hpY - 5, HP_W, 3, 0xff4444, 0.55)
-      .setScrollFactor(sf).setDepth(D + 7).setOrigin(0, 0.5);
-
-    // Dark lower shadow inside bar
-    this._scene.add.rectangle(barX + HP_W / 2, hpY + barH / 2 - 2, HP_W, 3, 0x000000, 0.35)
-      .setScrollFactor(sf).setDepth(D + 7).setOrigin(0.5, 0.5);
-
-    // Gold frame around HP bar
-    border(this._scene, barX + HP_W / 2, hpY, HP_W + 6, barH + 6, 1, 0xb8860b, 1, sf, D + 8);
-
-    // End cap diamond
-    this._scene.add.rectangle(barX + HP_W + 5, hpY, 8, 8, 0xdaa520, 0.9)
-      .setScrollFactor(sf).setDepth(D + 8).setAngle(45);
-
-    // Divider ticks
-    for (let t = 1; t < 5; t++) {
-      this._scene.add.rectangle(barX + (HP_W / 5) * t, hpY, 1, barH, 0x000000, 0.45)
-        .setScrollFactor(sf).setDepth(D + 9);
-    }
-
-    // ── SP bar ──────────────────────────────────────────────────────────────
-    const spY  = PY + PH - 16;
-    const spH  = 10;
+    // ── SP bar trough ──────────────────────────────────────────────────────
+    const spX = 78, spY = 42, spH = 12;
+    bg.fillStyle(0x000a0a, 1);
+    fillPara(bg, spX - 1, spY - 1, SP_W + 2, spH + 2, SLANT);
 
     // SP label
-    this._scene.add.text(barX, spY - 9, 'SP', {
+    sc.add.text(spX + SLANT + 2, spY + 1, 'SP', {
       fontSize: '9px', fontFamily: 'monospace',
-      color: '#22ccaa', stroke: '#000000', strokeThickness: 2,
-    }).setScrollFactor(sf).setDepth(D + 5);
+      color: '#11ccaa', stroke: '#000', strokeThickness: 2,
+    }).setScrollFactor(SF).setDepth(D + 6);
 
-    // Bar dark channel
-    this._scene.add.rectangle(barX + SP_W / 2, spY, SP_W + 4, spH + 4, 0x000000)
-      .setScrollFactor(sf).setDepth(D + 4).setOrigin(0.5, 0.5);
-    this._scene.add.rectangle(barX + SP_W / 2, spY, SP_W + 2, spH + 2, 0x020d0d)
-      .setScrollFactor(sf).setDepth(D + 5).setOrigin(0.5, 0.5);
+    // ── HP bar divider ticks (static, drawn once) ──────────────────────────
+    bg.lineStyle(1, 0x000000, 0.45);
+    for (let t = 1; t < 5; t++) {
+      const tx = hpX + (HP_W / 5) * t;
+      bg.beginPath();
+      bg.moveTo(tx + SLANT * (1 - t/5), hpY);
+      bg.lineTo(tx + SLANT * (1 - t/5) - SLANT, hpY + hpH);
+      bg.strokePath();
+    }
 
-    // SP fill
-    this._spFill = this._scene.add.rectangle(barX, spY, SP_W, spH, 0x007755)
-      .setScrollFactor(sf).setDepth(D + 6).setOrigin(0, 0.5);
+    // ══════════════════════════════════════════════════════════════════════
+    //  DYNAMIC HP fill graphics
+    // ══════════════════════════════════════════════════════════════════════
+    this._hpGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 2);
+    this._spGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 2);
 
-    // Teal shimmer
-    this._spShine = this._scene.add.rectangle(barX, spY - 3, SP_W, 2, 0x44ffcc, 0.5)
-      .setScrollFactor(sf).setDepth(D + 7).setOrigin(0, 0.5);
+    // Store geometry for update()
+    this._hpX = hpX; this._hpY = hpY; this._hpH = hpH;
+    this._spX = spX; this._spY = spY; this._spH = spH;
 
-    // Gold frame around SP bar
-    border(this._scene, barX + SP_W / 2, spY, SP_W + 6, spH + 6, 1, 0xb8860b, 0.7, sf, D + 8);
+    // ══════════════════════════════════════════════════════════════════════
+    //  FOREGROUND: bar borders and skull (on top of fills)
+    // ══════════════════════════════════════════════════════════════════════
+    const fg = sc.add.graphics().setScrollFactor(SF).setDepth(D + 4);
 
-    // End cap diamond
-    this._scene.add.rectangle(barX + SP_W + 5, spY, 6, 6, 0x8b6914, 0.85)
-      .setScrollFactor(sf).setDepth(D + 8).setAngle(45);
+    // HP bar gold border
+    fg.lineStyle(1.5, 0xc8920a, 1);
+    strokePara(fg, hpX - 1, hpY - 1, HP_W + 2, hpH + 2, SLANT);
 
-    // Store for update()
-    this._barX = barX;
+    // SP bar gold border
+    fg.lineStyle(1.5, 0xc8920a, 0.8);
+    strokePara(fg, spX - 1, spY - 1, SP_W + 2, spH + 2, SLANT);
 
-    // ── Pulsing shimmer animation ───────────────────────────────────────────
-    this._scene.tweens.add({
-      targets: [this._hpShine, this._spShine],
-      alpha: { from: 0.15, to: 0.7 },
-      duration: 850, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    // HP right-end diamond cap
+    fg.fillStyle(0xe8c040, 1);
+    fg.fillRect(hpX + HP_W - 2, hpY + hpH / 2 - 5, 10, 10);
+    fg.fillStyle(0x0d0808, 1);
+    fg.fillRect(hpX + HP_W + 1, hpY + hpH / 2 - 3, 4, 6);
+
+    // SP right-end diamond cap
+    fg.fillStyle(0xe8c040, 0.7);
+    fg.fillRect(spX + SP_W - 2, spY + spH / 2 - 4, 8, 8);
+    fg.fillStyle(0x0d0808, 1);
+    fg.fillRect(spX + SP_W + 1, spY + spH / 2 - 2, 4, 4);
+
+    // ── Pixel skull inside portrait circle ─────────────────────────────────
+    const BONE = 0xd0bc9a, VOID = 0x050505;
+    const sx = embX, sy = embY - 1;
+
+    fg.fillStyle(BONE, 1);
+    fg.fillRect(sx - 5,  sy - 10, 10, 4);   // cranium top
+    fg.fillRect(sx - 7,  sy - 6,  14, 9);   // cranium main
+    fg.fillRect(sx - 6,  sy + 3,  12, 6);   // jaw
+    fg.fillRect(sx - 3,  sy + 8,  6, 3);    // chin
+
+    fg.fillStyle(VOID, 1);
+    fg.fillRect(sx - 5,  sy - 4,   4, 5);   // left eye
+    fg.fillRect(sx + 1,  sy - 4,   4, 5);   // right eye
+    fg.fillRect(sx - 1,  sy + 2,   2, 3);   // nose
+
+    fg.fillRect(sx - 5,  sy + 7,  2, 5);    // tooth gap L
+    fg.fillRect(sx - 1,  sy + 7,  2, 5);    // tooth gap C
+    fg.fillRect(sx + 3,  sy + 7,  2, 5);    // tooth gap R
+
+    // Red eye glow
+    fg.fillStyle(0xff2200, 0.7);
+    fg.fillRect(sx - 4, sy - 3, 2, 3);
+    fg.fillRect(sx + 2, sy - 3, 2, 3);
+
+    // Portrait ring inner glow arc (decorative)
+    fg.lineStyle(1, 0xdd6600, 0.4);
+    fg.strokeCircle(embX, embY, 18);
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  SHIMMER graphics (pulsing, on top of fill)
+    // ══════════════════════════════════════════════════════════════════════
+    this._hpShimGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 3);
+    this._spShimGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 3);
+
+    // Animate shimmer alpha
+    sc.tweens.add({
+      targets: [this._hpShimGfx, this._spShimGfx],
+      alpha: { from: 0.15, to: 0.75 },
+      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
     });
 
-    // ── Armor pips ──────────────────────────────────────────────────────────
-    this._armorLabel = this._scene.add.text(barX, PY + PH + 4, 'ARMOR', {
+    // ══════════════════════════════════════════════════════════════════════
+    //  ARMOR PIPS
+    // ══════════════════════════════════════════════════════════════════════
+    this._armorLabel = sc.add.text(hpX, 82, 'ARMOR', {
       fontSize: '9px', fontFamily: 'monospace', color: '#997700',
-    }).setScrollFactor(sf).setDepth(D + 3).setAlpha(0);
+    }).setScrollFactor(SF).setDepth(D + 5).setAlpha(0);
 
     this._pips = Array.from({ length: 5 }, (_, i) =>
-      this._scene.add.rectangle(barX + 36 + i * 19, PY + PH + 14, 15, 9, 0xffcc00)
-        .setScrollFactor(sf).setDepth(D + 2).setAlpha(0),
+      sc.add.rectangle(hpX + 36 + i * 20, 92, 16, 9, 0xffcc00)
+        .setScrollFactor(SF).setDepth(D + 4).setAlpha(0),
     );
 
-    // ── Weapon slot (top-right, gold-framed) ────────────────────────────────
-    const slotX = 757, slotY = 27;
-    // Outer gold frame
-    this._scene.add.rectangle(slotX, slotY, 78, 60, 0xb8860b)
-      .setScrollFactor(sf).setDepth(D);
-    // Second gold ring
-    this._scene.add.rectangle(slotX, slotY, 74, 56, 0x8b6914)
-      .setScrollFactor(sf).setDepth(D + 1);
-    // Dark interior
-    this._scene.add.rectangle(slotX, slotY, 70, 52, 0x080c14)
-      .setScrollFactor(sf).setDepth(D + 2);
-    this._scene.add.rectangle(slotX, slotY, 66, 48, 0x0e1824)
-      .setScrollFactor(sf).setDepth(D + 3);
+    // ══════════════════════════════════════════════════════════════════════
+    //  WEAPON SLOT (top-right, gold framed)
+    // ══════════════════════════════════════════════════════════════════════
+    const slotX = 757, slotY = 28;
+    const wgfx = sc.add.graphics().setScrollFactor(SF).setDepth(D);
+
+    // Shadow
+    wgfx.fillStyle(0x000000, 0.55);
+    wgfx.fillRect(slotX - 36, slotY - 29, 76, 60);
+
+    // Gold outer frame
+    wgfx.fillStyle(0xc8920a, 1);
+    wgfx.fillRect(slotX - 37, slotY - 30, 74, 58);
+
+    // Inner ring
+    wgfx.fillStyle(0x7a5808, 1);
+    wgfx.fillRect(slotX - 34, slotY - 27, 68, 52);
+
+    // Dark bg
+    wgfx.fillStyle(0x080c14, 1);
+    wgfx.fillRect(slotX - 32, slotY - 25, 64, 48);
+    wgfx.fillStyle(0x0e1824, 1);
+    wgfx.fillRect(slotX - 30, slotY - 23, 60, 44);
+
     // Corner accents
-    [[slotX - 37, slotY - 28], [slotX + 37, slotY - 28],
-     [slotX - 37, slotY + 28], [slotX + 37, slotY + 28]].forEach(([cx, cy]) => {
-      this._scene.add.rectangle(cx, cy, 5, 5, 0xdaa520)
-        .setScrollFactor(sf).setDepth(D + 4);
+    [[slotX-37,slotY-30],[slotX+37,slotY-30],
+     [slotX-37,slotY+28],[slotX+37,slotY+28]].forEach(([cx,cy]) => {
+      wgfx.fillStyle(0xe8c040, 1);
+      wgfx.fillRect(cx-3, cy-3, 7, 7);
     });
 
-    this._emptySlot = this._scene.add.text(slotX, slotY - 4, '---', {
+    this._emptySlot = sc.add.text(slotX, slotY - 4, '---', {
       fontSize: '14px', fontFamily: 'monospace', color: '#1a2a3a',
-    }).setOrigin(0.5).setScrollFactor(sf).setDepth(D + 5);
-    this._slotLabel = this._scene.add.text(slotX, slotY + 17, 'Z:PUNCH\nX:KICK', {
+    }).setOrigin(0.5).setScrollFactor(SF).setDepth(D + 5);
+    this._slotLabel = sc.add.text(slotX, slotY + 17, 'Z:PUNCH\nX:KICK', {
       fontSize: '7px', fontFamily: 'monospace', color: '#2a4455', align: 'center',
-    }).setOrigin(0.5, 0).setScrollFactor(sf).setDepth(D + 5);
+    }).setOrigin(0.5, 0).setScrollFactor(SF).setDepth(D + 5);
 
     this._slotX = slotX;
     this._slotY = slotY - 8;
 
-    // ── Combo counter ────────────────────────────────────────────────────────
-    this._comboTxt = this._scene.add.text(400, 185, '', {
+    // ══════════════════════════════════════════════════════════════════════
+    //  COMBO COUNTER
+    // ══════════════════════════════════════════════════════════════════════
+    this._comboTxt = sc.add.text(400, 185, '', {
       fontSize: '28px', fontFamily: 'monospace',
       color: '#ffffff', stroke: '#000000', strokeThickness: 4,
-    }).setOrigin(0.5).setScrollFactor(sf).setDepth(D + 10).setAlpha(0);
+    }).setOrigin(0.5).setScrollFactor(SF).setDepth(D + 12).setAlpha(0);
+  }
+
+  // ── Per-frame update ────────────────────────────────────────────────────────
+
+  update(player) {
+    const pct = Math.max(0, Math.min(1, player.health / player.maxHealth));
+
+    // HP color: dark crimson → blood red → danger orange-red
+    let hpTop, hpBot, hpMid;
+    if (pct > 0.5) {
+      hpTop = 0xdd2200; hpMid = 0x8b0000; hpBot = 0x550000;
+    } else if (pct > 0.25) {
+      hpTop = 0xff4400; hpMid = 0xaa2200; hpBot = 0x661100;
+    } else {
+      hpTop = 0xff6600; hpMid = 0xcc2200; hpBot = 0x880000;
+    }
+
+    const { _hpGfx: hg, _spGfx: sg, _hpShimGfx: hs, _spShimGfx: ss } = this;
+    const { _hpX: hpX, _hpY: hpY, _hpH: hpH, _spX: spX, _spY: spY, _spH: spH } = this;
+
+    // ── HP fill ────────────────────────────────────────────────────────────
+    hg.clear();
+    if (pct > 0) {
+      const fw = HP_W * pct;
+
+      // Bottom dark layer
+      hg.fillStyle(hpBot, 1);
+      fillPara(hg, hpX, hpY, fw, hpH, SLANT);
+
+      // Middle gradient band
+      hg.fillGradientStyle(hpTop, hpTop, hpMid, hpMid, 1);
+      fillPara(hg, hpX, hpY, fw, hpH * 0.55, SLANT);
+
+      // Bright top edge
+      hg.fillStyle(0xff6666, 0.6);
+      fillPara(hg, hpX, hpY, fw, 3, SLANT);
+    }
+
+    // ── HP shimmer ─────────────────────────────────────────────────────────
+    hs.clear();
+    if (pct > 0) {
+      const fw = HP_W * pct;
+      hs.fillStyle(0xff9999, 1);
+      fillPara(hs, hpX, hpY + 2, fw, 4, SLANT);
+    }
+
+    // ── SP fill ────────────────────────────────────────────────────────────
+    sg.clear();
+    if (pct > 0) {
+      const fw = SP_W * pct;
+      sg.fillStyle(0x006644, 1);
+      fillPara(sg, spX, spY, fw, spH, SLANT);
+
+      sg.fillGradientStyle(0x44ffcc, 0x44ffcc, 0x009966, 0x009966, 1);
+      fillPara(sg, spX, spY, fw, spH * 0.5, SLANT);
+
+      sg.fillStyle(0x88ffee, 0.5);
+      fillPara(sg, spX, spY, fw, 2, SLANT);
+    }
+
+    // ── SP shimmer ─────────────────────────────────────────────────────────
+    ss.clear();
+    if (pct > 0) {
+      const fw = SP_W * pct;
+      ss.fillStyle(0x88ffdd, 1);
+      fillPara(ss, spX, spY + 1, fw, 3, SLANT);
+    }
   }
 
   // ── Event wiring ───────────────────────────────────────────────────────────
@@ -296,12 +393,11 @@ export default class HUD {
     ev.on('combo-reset',     () => this._onComboReset());
   }
 
-  // ── Combo counter ──────────────────────────────────────────────────────────
+  // ── Combo ──────────────────────────────────────────────────────────────────
 
   _onComboHit() {
     this._comboCount++;
     if (this._comboCount < 3) return;
-
     const n = this._comboCount;
     let color, size;
     if      (n >= 15) { color = '#ff2200'; size = '38px'; }
@@ -309,16 +405,10 @@ export default class HUD {
     else if (n >=  7) { color = '#ffee00'; size = '31px'; }
     else if (n >=  5) { color = '#ffff55'; size = '30px'; }
     else              { color = '#ffffff'; size = '28px'; }
-
     const label = n >= 10 ? 'COMBO!!' : n >= 5 ? 'COMBO!' : 'HITS';
     this._comboTxt.setText(`${n} ${label}`).setFontSize(size).setColor(color).setAlpha(1).setScale(1);
-
     this._scene.tweens.killTweensOf(this._comboTxt);
-    this._scene.tweens.add({
-      targets: this._comboTxt, scaleX: 1.22, scaleY: 1.22,
-      duration: 70, yoyo: true, ease: 'Power2',
-    });
-
+    this._scene.tweens.add({ targets: this._comboTxt, scaleX: 1.22, scaleY: 1.22, duration: 70, yoyo: true, ease: 'Power2' });
     if (this._comboClearTimer) this._comboClearTimer.remove();
     this._comboClearTimer = this._scene.time.delayedCall(1800, () => this._fadeCombo());
   }
@@ -336,26 +426,24 @@ export default class HUD {
 
   // ── Armor pips ─────────────────────────────────────────────────────────────
 
-  _showArmorRow(visible) {
-    const a = visible ? 1 : 0;
-    this._armorLabel.setAlpha(a);
-    this._pips.forEach(p => p.setAlpha(a));
+  _showArmorRow(v) {
+    this._armorLabel.setAlpha(v ? 1 : 0);
+    this._pips.forEach(p => p.setAlpha(v ? 1 : 0));
   }
 
-  _refreshPips(durability) {
-    this._pips.forEach((pip, i) => {
-      const alive = i < durability;
-      pip.setFillStyle(alive ? 0xffcc00 : 0x442200);
-      pip.setAlpha(alive ? 1.0 : 0.28);
+  _refreshPips(dur) {
+    this._pips.forEach((p, i) => {
+      p.setFillStyle(i < dur ? 0xffcc00 : 0x442200);
+      p.setAlpha(i < dur ? 1 : 0.28);
     });
   }
 
-  _onArmorEquipped({ durability })  { this._showArmorRow(true); this._refreshPips(durability); }
-  _onArmorHit({ durability })       { this._refreshPips(durability); }
-  _onArmorBroken()                  { this._refreshPips(0); this._scene.time.delayedCall(900, () => this._showArmorRow(false)); }
-  _onArmorRefilled({ durability })  { this._refreshPips(durability); }
+  _onArmorEquipped({ durability }) { this._showArmorRow(true);  this._refreshPips(durability); }
+  _onArmorHit({ durability })      { this._refreshPips(durability); }
+  _onArmorBroken()                 { this._refreshPips(0); this._scene.time.delayedCall(900, () => this._showArmorRow(false)); }
+  _onArmorRefilled({ durability }) { this._refreshPips(durability); }
 
-  // ── Weapon icon ────────────────────────────────────────────────────────────
+  // ── Weapon slot ────────────────────────────────────────────────────────────
 
   _onWeaponChanged(type) {
     this._iconRects.forEach(r => r?.destroy());
@@ -367,23 +455,7 @@ export default class HUD {
       return;
     }
     this._emptySlot.setAlpha(0);
-    this._iconRects = def.draw(this._scene, this._slotX, this._slotY, 0, 25);
+    this._iconRects = def.draw(this._scene, this._slotX, this._slotY, D_BASE + 6);
     this._slotLabel.setText(def.hint).setColor(def.color);
-  }
-
-  // ── Per-frame update ────────────────────────────────────────────────────────
-
-  update(player) {
-    const hp = Math.max(0, player.health / player.maxHealth);
-
-    this._hpFill.width  = HP_W * hp;
-    this._hpShine.width = HP_W * hp;
-
-    // Colour shifts: crimson → orange-red → bright red (danger)
-    this._hpFill.fillColor = hp > 0.5 ? 0x8b0000 : hp > 0.25 ? 0xaa2200 : 0xcc1100;
-
-    // SP mirrors HP for now (no separate SP system yet)
-    this._spFill.width  = SP_W * hp;
-    this._spShine.width = SP_W * hp;
   }
 }
