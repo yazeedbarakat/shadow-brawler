@@ -52,7 +52,7 @@ export const ASSET_DEFS = {
   bg_city:             { path: '/assets/backgrounds/level1theame.webp',   w: 1600, h: 450 },
   bg_level1:           { path: '/assets/backgrounds/level1_bg.png',       w: 1600, h: 450 },
   bg_level1_anim:      { path: '/assets/backgrounds/level1_anim.png',     w: 2730, h: 1536, frameWidth: 910, frameHeight: 512 },
-  bg_temple:           { path: '/assets/backgrounds/level2theme.png',     w: 1600, h: 450 },
+  bg_temple:           { path: '/assets/backgrounds/level2theme.webp',    w: 1600, h: 450 },
   bg_forest:           { path: '/assets/backgrounds/level3theme.webp',    w: 1600, h: 450 },
   bg_castle:           { path: '/assets/backgrounds/level4theme.webp',    w: 1600, h: 450 },
   bg_throne:           { path: '/assets/backgrounds/level5theme.webp',    w: 1200, h: 450 },
