@@ -187,8 +187,8 @@ function drawOniPortrait(g, cx, cy, r) {
 
   // Eyes (white with red glow)
   g.fillStyle(C.EYE_WHITE, 1);
-  g.fillEllipse(cx - 5 * s, cy - 3 * s, 7 * s, 5 * s);
-  g.fillEllipse(cx + 5 * s, cy - 3 * s, 7 * s, 5 * s);
+  g.fillRect(cx - 8 * s, cy - 6 * s, 6 * s, 5 * s);   // left eye white
+  g.fillRect(cx + 2 * s, cy - 6 * s, 6 * s, 5 * s);   // right eye white
   g.fillStyle(C.EYE_GLOW, 1);
   g.fillCircle(cx - 5 * s, cy - 3 * s, 2 * s);
   g.fillCircle(cx + 5 * s, cy - 3 * s, 2 * s);
@@ -357,7 +357,6 @@ export default class HUD {
 
     // ── Static frame ─────────────────────────────────────────────────────────
     const bg = sc.add.graphics().setScrollFactor(SF).setDepth(D);
-    sc.add.container(0, 0).setScrollFactor(SF); // anchor
 
     // Shadow
     bg.fillStyle(0x000000, 0.7);
@@ -545,9 +544,11 @@ export default class HUD {
     fillGfx.fillStyle(C.BAR_DARK, 1);
     fillPara(fillGfx, bx, by + Math.floor(bh * 0.5), fw, Math.ceil(bh * 0.5), SLANT);
 
-    // 3. Crimson mid gradient
-    fillGfx.fillGradientStyle(C.BAR_BRIGHT, C.BAR_BRIGHT, C.BAR_MID, C.BAR_MID, 1);
+    // 3. Crimson mid layers (simulated gradient — no fillGradientStyle with fillPath)
+    fillGfx.fillStyle(C.BAR_MID, 1);
     fillPara(fillGfx, bx, by + 2, fw, Math.floor(bh * 0.55), SLANT);
+    fillGfx.fillStyle(C.BAR_BRIGHT, 0.75);
+    fillPara(fillGfx, bx, by + 2, fw, Math.floor(bh * 0.28), SLANT);
 
     // 4. Bright top sliver
     fillGfx.fillStyle(0xff2244, 0.85);
