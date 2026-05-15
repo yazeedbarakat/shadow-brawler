@@ -1,0 +1,13 @@
+uploads = []
+
+[[generated]]
+id = "jcUp4q5SJKoQOrzT-0FFE"
+uri = "file://assets/backgrounds/level1_bg.png"
+type = "image"
+title = "crimson ruins background"
+
+[[outputs]]
+id = "IQwdkZizK2D4dpNPw3ebc"
+uri = "file://assets/backgrounds/level1_bg.png"
+type = "image"
+title = "Level 1 Background — Crimson Ruins"
