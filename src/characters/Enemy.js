@@ -129,8 +129,8 @@ class DeadState extends EState {
     e.sprite.setVelocityX(0);
 
     // Remove health bar right away — it's meaningless
-    e._hpBg.destroy();
-    e._hpBar.destroy();
+    e._hpBg?.destroy();
+    e._hpBar?.destroy();
 
     // Squash-and-fade death tween
     e.scene.tweens.add({

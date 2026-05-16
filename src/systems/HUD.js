@@ -278,18 +278,27 @@ export default class HUD {
   // ══════════════════════════════════════════════════════════════════════════
   //  BOSS BAR (bottom-center) — hidden until setBoss() is called
   // ══════════════════════════════════════════════════════════════════════════
+  //  BOSS BAR (top-right) — hidden until setBoss() is called
+  // ══════════════════════════════════════════════════════════════════════════
   _buildBossBar() {
     const sc = this._scene;
 
-    // ── Layout ──────────────────────────────────────────────────────────────
-    const BX   = 118;           // frame left
-    const BY   = 410;           // frame top
-    const BW   = 564;           // frame width
-    const BH   = 34;            // frame height
-    const EMB_X = 147, EMB_Y = BY + BH / 2;
-    const BAR_X = 170, BAR_Y = BY + 7, BAR_H = 18;
+    // ── Layout: top-right corner (stops at x=712, clear of the weapon slot at x=720) ──
+    const BW    = 350;               // frame width
+    const BH    = 36;                // frame height
+    const BX    = 360;               // frame left edge
+    const BY    = 6;                 // frame top
+    const EMB_X = BX + 22;          // oni portrait centre x (= 382)
+    const EMB_Y = BY + BH / 2;      // oni portrait centre y (= 24)
+    const BAR_X = BX + 44;          // fill bar left edge    (= 404)
+    const BAR_Y = BY + 9;           // fill bar top          (= 15)
+    const BAR_H = 18;               // fill bar height
+    const FILL_W = BX + BW - 12 - BAR_X; // max fill width  (= 294)
 
-    this._bossBarX = BAR_X; this._bossBarY = BAR_Y; this._bossBarH = BAR_H;
+    this._bossBarX = BAR_X;
+    this._bossBarY = BAR_Y;
+    this._bossBarH = BAR_H;
+    this._bossBarW = FILL_W;
 
     // ── Static frame ─────────────────────────────────────────────────────────
     const bg = sc.add.graphics().setScrollFactor(SF).setDepth(D);
@@ -304,14 +313,14 @@ export default class HUD {
     bg.fillStyle(0x160606, 1);
     bg.fillRect(BX + 3, BY + 3, BW - 6, BH - 6);
 
-    // Texture lines
+    // Texture lines (diagonal hatching)
     bg.lineStyle(1, 0x2a0808, 0.35);
-    for (let i = 0; i < 26; i++) {
-      const tx = BX + i * 22;
+    for (let i = 0; i < 18; i++) {
+      const tx = BX + i * 20;
       bg.beginPath(); bg.moveTo(tx, BY); bg.lineTo(tx + 10, BY + BH); bg.strokePath();
     }
 
-    // Frame
+    // Frame border
     bg.lineStyle(2, C.FRAME_COPPER, 1);
     bg.strokeRect(BX, BY, BW, BH);
     bg.lineStyle(1, C.FRAME_MID, 0.5);
@@ -319,71 +328,70 @@ export default class HUD {
     bg.lineStyle(1, C.FRAME_BRIGHT, 0.8);
     bg.beginPath(); bg.moveTo(BX, BY); bg.lineTo(BX + BW, BY); bg.strokePath();
 
-    // Corners
+    // Corner studs
     [[BX,BY],[BX+BW,BY],[BX,BY+BH],[BX+BW,BY+BH]].forEach(([cx,cy]) => {
       bg.fillStyle(C.CORNER_GOLD, 1); bg.fillRect(cx-4, cy-4, 8, 8);
       bg.fillStyle(C.FRAME_DARK,  1); bg.fillRect(cx-2, cy-2, 4, 4);
     });
 
-    // Vine accents
-    [0.25, 0.45, 0.65, 0.82].forEach(t => {
-      const tx = BX + t * BW;
-      bg.fillStyle(C.FRAME_COPPER, 0.6);
-      bg.fillRect(tx - 1, BY - 3, 3, 5);
-      bg.fillRect(tx - 1, BY + BH - 2, 3, 5);
-    });
-
     // Bar trough
     bg.fillStyle(C.BAR_VOID, 1);
-    fillPara(bg, BAR_X - 1, BAR_Y - 1, BOSS_W + 4, BAR_H + 2, SLANT);
+    fillPara(bg, BAR_X - 1, BAR_Y - 1, FILL_W + 4, BAR_H + 2, SLANT);
 
-    // Separator
+    // Separator after portrait
     bg.fillStyle(C.FRAME_MID, 0.7);
-    bg.fillRect(EMB_X + 22, BY + 4, 2, BH - 8);
+    bg.fillRect(EMB_X + 18, BY + 4, 2, BH - 8);
 
     // Oni portrait
     const fg = sc.add.graphics().setScrollFactor(SF).setDepth(D + 5);
-    drawOniPortrait(fg, EMB_X, EMB_Y, 16);
+    drawOniPortrait(fg, EMB_X, EMB_Y, 14);
 
     // Bar border overlay
     const bfg = sc.add.graphics().setScrollFactor(SF).setDepth(D + 4);
     bfg.lineStyle(1.5, C.FRAME_COPPER, 1);
-    strokePara(bfg, BAR_X - 1, BAR_Y - 1, BOSS_W + 4, BAR_H + 2, SLANT);
+    strokePara(bfg, BAR_X - 1, BAR_Y - 1, FILL_W + 4, BAR_H + 2, SLANT);
     bfg.lineStyle(1, C.FRAME_BRIGHT, 0.5);
-    strokePara(bfg, BAR_X, BAR_Y, BOSS_W + 2, BAR_H, SLANT);
+    strokePara(bfg, BAR_X, BAR_Y, FILL_W + 2, BAR_H, SLANT);
 
     // End cap
     bfg.fillStyle(C.CORNER_GOLD, 1);
-    bfg.fillRect(BAR_X + BOSS_W + 2, BAR_Y + BAR_H / 2 - 5, 9, 9);
+    bfg.fillRect(BAR_X + FILL_W + 2, BAR_Y + BAR_H / 2 - 5, 9, 9);
     bfg.fillStyle(C.FRAME_DARK, 1);
-    bfg.fillRect(BAR_X + BOSS_W + 4, BAR_Y + BAR_H / 2 - 3, 5, 5);
+    bfg.fillRect(BAR_X + FILL_W + 4, BAR_Y + BAR_H / 2 - 3, 5, 5);
 
-    // Boss name text
-    this._bossNameTxt = sc.add.text(BX + BW / 2 + 10, BY - 14, '', {
-      fontSize: '11px', fontFamily: 'monospace',
-      color: '#ff4466', stroke: '#000', strokeThickness: 3,
+    // Boss name text — centred in the bar area, near the top of the frame
+    this._bossNameTxt = sc.add.text(BAR_X + FILL_W / 2, BY + 4, '', {
+      fontSize: '9px', fontFamily: 'monospace',
+      color: '#ff4466', stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5, 0).setScrollFactor(SF).setDepth(D + 6);
 
-    // Fill + shimmer graphics (updated per frame)
-    this._bossGfx      = sc.add.graphics().setScrollFactor(SF).setDepth(D + 2);
-    this._bossShimGfx  = sc.add.graphics().setScrollFactor(SF).setDepth(D + 3);
+    // Fill + shimmer graphics (redrawn every frame)
+    this._bossGfx     = sc.add.graphics().setScrollFactor(SF).setDepth(D + 2);
+    this._bossShimGfx = sc.add.graphics().setScrollFactor(SF).setDepth(D + 3);
 
-    sc.tweens.add({
-      targets: this._bossShimGfx,
-      alpha: { from: 0.1, to: 0.65 },
-      duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-    });
-
-    // Collect all boss bar objects for alpha control
+    // All boss-bar objects hidden until setBoss() reveals them
     this._bossContainer = [bg, fg, bfg, this._bossNameTxt, this._bossGfx, this._bossShimGfx];
-
-    // Hide until boss is registered
     this._bossContainer.forEach(o => o.setAlpha(0));
   }
 
-  // ── Register a boss reference (bar removed — no visual) ──────────────────
+  // ── Register a boss and reveal the health bar ────────────────────────────
   setBoss(enemy, name = 'BOSS') {
     this._boss = enemy;
+    this._buildBossBar();
+    this._bossNameTxt.setText(name);
+    // Fade in everything except the shimmer (which gets its own pulse tween)
+    this._bossContainer
+      .filter(o => o !== this._bossShimGfx)
+      .forEach(o => {
+        this._scene.tweens.add({ targets: o, alpha: 1, duration: 700, ease: 'Sine.easeIn' });
+      });
+    this._scene.time.delayedCall(700, () => {
+      this._scene.tweens.add({
+        targets: this._bossShimGfx,
+        alpha: { from: 0.1, to: 0.65 },
+        duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+    });
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -448,7 +456,12 @@ export default class HUD {
       this._hpGfx.fillRect(this._hpFillX, this._hpFillY, fillW, this._hpFillH);
     }
 
-    // Boss bar removed — single player bar only
+    // ── Boss HP bar ───────────────────────────────────────────────────────────
+    if (this._boss && this._bossGfx && !this._boss.isDead) {
+      const bossPct = Math.max(0, this._boss.health / this._boss.maxHealth);
+      this._drawBar(this._bossGfx, this._bossShimGfx,
+        this._bossBarX, this._bossBarY, this._bossBarH, this._bossBarW, bossPct);
+    }
   }
 
   // ── Draw one demon-style bar ───────────────────────────────────────────────
